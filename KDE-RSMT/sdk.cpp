@@ -5,6 +5,12 @@
 #include <climits>
 using namespace std;
 using namespace sdk;
+Point sdk::convert(const Point &p, double kx, double ky, double dx, double dy) {
+    return make_pair(p.first * kx + dx, p.second * ky + dy);
+}
+Point reconvert(const Point &p, double kx, double ky, double dx, double dy) {
+    return make_pair((p.first - dx) / kx, (p.second - dy) / dy);
+}
 istream& sdk::operator>>(istream &in, Point &point) {
     return in >> point.first >> point.second;
 }

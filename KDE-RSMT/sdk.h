@@ -4,6 +4,8 @@
 #include <iostream>
 namespace sdk {
 typedef std::pair<int, int> Point, Pair;
+Point convert(const Point &p, double kx, double ky, double dx, double dy);
+Point reconvert(const Point &p, double kx, double ky, double dx, double dy);
 std::istream& operator>>(std::istream &in, Point &point);
 std::ostream& operator<<(std::ostream &out, const Point &point);
 typedef std::vector<Point> Points;
