@@ -9,9 +9,10 @@ class Drawwidget : public QWidget
 public:
     explicit Drawwidget(QWidget *parent = 0);
     void paintEvent(QPaintEvent *);
+    bool eventFilter(QObject *, QEvent *);
     sdk::Graph graph;
 signals:
-    
+
 public slots:
     
 };

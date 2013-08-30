@@ -15,7 +15,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     Drawwidget *drawwidget;
-    bool eventFilter(QObject *, QEvent *);
 private slots:
     void on_actionOpen_File_triggered();
 
