@@ -17,9 +17,9 @@ void DrawWidget::paintEvent(QPaintEvent *) {
     if (graph.points().size() == 0)
         return ;
 
-    vector<int> info = graph.information();
-    double kx = width() * zoom / max(1, info[2]);
-    double ky = height() * zoom / max(1, info[3]);
+    vector<sdk::PointType> info = graph.information();
+    double kx = width() * zoom / max(1.0, info[2]);
+    double ky = height() * zoom / max(1.0, info[3]);
     kx = ky = min(kx, ky);
     double dx = (width() - kx * info[2]) / 2;
     double dy = (height() - ky * info[3]) / 2;
@@ -52,9 +52,9 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
                     return false;
                 QMouseEvent *m = static_cast<QMouseEvent *>(eve);
 
-                vector<int> info = graph.information();
-                double kx = width() * zoom / max(1, info[2]);
-                double ky = height() * zoom / max(1, info[3]);
+                vector<sdk::PointType> info = graph.information();
+                double kx = width() * zoom / max(1.0, info[2]);
+                double ky = height() * zoom / max(1.0, info[3]);
                 kx = ky = min(kx, ky);
                 double dx = (width() - kx * info[2]) / 2;
                 double dy = (height() - ky * info[3]) / 2;

@@ -8,6 +8,9 @@ using namespace sdk;
 double sdk::distance(const Point &p1, const Point &p2) {
     return sqrt(pow(p1.first - p2.first, 2) + pow(p1.second - p2.second, 2));
 }
+bool sdk::equal(const Point &p1, const Point &p2) {
+    return abs(sdk::distance(p1, p2) < 1e-4);
+}
 Point sdk::convert(const Point &p, double kx, double ky, double dx, double dy) {
     return make_pair(p.first * kx + dx, p.second * ky + dy);
 }
@@ -44,7 +47,7 @@ ostream& sdk::operator<<(ostream &out, const Edge &edge) {
         << edge.L.first << "," << edge.L.second << endl
         << edge.U.first << "," << edge.U.second << endl;
 }
-static int dist(const Point &p1, const Point &p2) {
+static PointType dist(const Point &p1, const Point &p2) {
     return abs(p1.first - p2.first) + abs(p1.second - p2.second);
 }
 Tuple Edge::weight() const {
@@ -105,7 +108,7 @@ static void pretreatment(vector<vector<int> > &edges, Edges &edges_, int origion
         }
     }
 }
-static pair<int, int> make_sortpair(int a, int b) {
+static Point make_sortpair(PointType a, PointType b) {
     return make_pair(min(a, b), max(a, b));
 }
 static pair<Tuple, Tuple> hv(const Point &p1, const Point &p2, int LU) {
@@ -125,7 +128,7 @@ static int overlapmax(const vector<int> &edges, const Edges edges_, int LU) {
     }
     sort(H.begin(), H.end());
     sort(V.begin(), V.end());
-    int overlapsum = 0;
+    PointType overlapsum = 0;
     for (int i = 0; i < H.size(); i++)
         overlapsum += H[i].second.second - H[i].second.first;
     for (int i = 0; i < V.size(); i++)
@@ -152,7 +155,7 @@ static void LU(const vector<vector<int> > &edges, vector<Edge> &edges_, Edge &e)
         return ;
     }
     for (int i = 0; i < (1 << edges[e.end()].size()); i++) {
-        int tmp = dist(e.beginp(), e.endp()) - overlapmax(edges[e.end()], edges_, i);
+        PointType tmp = dist(e.beginp(), e.endp()) - overlapmax(edges[e.end()], edges_, i);
         for (int j = 0; j < edges[e.end()].size() - 1; j++) {
             LU(edges, edges_, edges_[edges[e.end()][j]]);
             if ((i >> edges[e.end()].size() - i - 1) % 2 == 0)
@@ -178,7 +181,7 @@ istream& sdk::operator>>(istream &in, Graph &graph) {
     graph.calculateGraph();
     return in;
 }
-static pair<Tuples, Tuples> HV(const vector<vector<int> > &edges, const vector<Edge> &edges_, const Edge &e, int LU) {
+static pair<Tuples, Tuples> HV(const vector<vector<int> > &edges, const Edges &edges_, const Edge &e, int LU) {
     Tuples H, V;
     for (int i = 0; i < edges[e.end()].size() - 1; i++) {
         const Edge &n_e = edges_[edges[e.end()][i]];
@@ -221,13 +224,13 @@ ostream& sdk::operator<<(ostream &out, const Graph &graph) {
         out << graph.edges_[i] << endl;
     out << "H:";
     for (int i = 0; i < graph.HVs_.first.size(); i++) {
-        const pair<int, pair<int, int> > &H = graph.HVs_.first[i];
+        const Tuple &H = graph.HVs_.first[i];
         out << H.first << ","
             << H.second.first << "-" << H.second.second << endl;
     }
     out << "V:";
     for (int i = 0; i < graph.HVs_.second.size(); i++) {
-        const pair<int, pair<int, int> > &V = graph.HVs_.second[i];
+        const Tuple &V = graph.HVs_.second[i];
         out << V.first << ","
             << V.second.first << "-" << V.second.second << endl;
     }
@@ -249,12 +252,12 @@ Points Graph::points() const {
 int Graph::searchpoint(const Point &p) {
     int l = 0, r = points_.size() - 1;
     while (l < r) {
-        if (points_[(l + r) / 2] < p)
+        if (equal(points_[(l + r) / 2], p))
+            l = r = (l + r) / 2;
+        else if (points_[(l + r) / 2] < p)
             l = (l + r) / 2 + 1;
         else if (points_[(l + r) / 2] > p)
             r = (l + r) / 2;
-        else
-            l = r = (l + r) / 2;
     }
     return points_[l] == p ? l : -1;
 }
@@ -275,15 +278,15 @@ bool Graph::deletepoint(const Point &p) {
     calculateGraph();
     return true;
 }
-vector<int> Graph::information() const {
-    int minx = INT_MAX, miny = INT_MAX, maxx = INT_MIN, maxy = INT_MIN;
-    for (int i = 0; i < points_.size(); i++) {
+vector<PointType> Graph::information() const {
+    PointType minx = points_[0].first, miny = points_[0].second, maxx = points_[0].first, maxy = points_[0].second;
+    for (int i = 1; i < points_.size(); i++) {
         minx = min(minx, points_[i].first);
         miny = min(miny, points_[i].second);
         maxx = max(maxx, points_[i].first);
         maxy = max(maxy, points_[i].second);
     }
-    vector<int> info(4);
+    vector<PointType> info(4);
     info[0] = minx;
     info[1] = miny;
     info[2] = maxx - minx;

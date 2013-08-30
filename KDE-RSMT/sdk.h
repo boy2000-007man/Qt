@@ -3,14 +3,17 @@
 #include <vector>
 #include <iostream>
 namespace sdk {
-typedef std::pair<int, int> Point, Pair;
+typedef double PointType;
+typedef std::pair<PointType, PointType> Point;
+bool equal(const Point &p1, const Point &p2);
+typedef std::pair<int, int> Pair;
 double distance(const Point &p1, const Point &p2);
 Point convert(const Point &p, double kx, double ky, double dx, double dy);
 Point reconvert(const Point &p, double kx, double ky, double dx, double dy);
 std::istream& operator>>(std::istream &in, Point &point);
 std::ostream& operator<<(std::ostream &out, const Point &point);
 typedef std::vector<Point> Points;
-typedef std::pair<int, std::pair<int, int> > Tuple;
+typedef std::pair<PointType, std::pair<PointType, PointType> > Tuple;
 typedef std::vector<Tuple> Tuples;
 std::istream& operator>>(std::istream &in, Point &point);
 std::ostream& operator<<(std::ostream &out, const Point &point);
@@ -39,7 +42,7 @@ class Graph {
     void calculateGraph();
 public:
     Points points() const;
-    std::vector<int> information() const;
+    std::vector<PointType> information() const;
     bool addpoint(const Point &p);
     bool deletepoint(const Point &p);
     int searchpoint(const Point &p);
