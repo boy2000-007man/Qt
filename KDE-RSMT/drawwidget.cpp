@@ -24,7 +24,6 @@ void Drawwidget::paintEvent(QPaintEvent *) {
     const int dx = (width() - kx * x) / 2;
     const int dy = (height() - ky * y) / 2;
     const sdk::Tuples &H = graph.HVs_.first, &V = graph.HVs_.second;
-
     p.setPen(QPen(Qt::black, 3));
     for (int i = 0; i < H.size(); i++)
         p.drawLine(dx + (H[i].second.first-minx) * kx, dy + (H[i].first-miny) * ky, dx + (H[i].second.second-minx) * kx, dy + (H[i].first-miny) * ky);

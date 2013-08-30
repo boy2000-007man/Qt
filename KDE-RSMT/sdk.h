@@ -36,8 +36,8 @@ class Graph {
     void calculateGraph();
 public:
     Points points() const;
-    void addpoint(const Point &p);
-    void deletepoint(const Point &p);
+    bool addpoint(const Point &p);
+    bool deletepoint(const Point &p);
     int searchpoint(const Point &p);
     std::pair<Tuples, Tuples> HVs_;
     friend std::istream& operator>>(std::istream &in, Graph &graph);

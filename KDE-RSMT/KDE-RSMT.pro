@@ -19,6 +19,7 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     drawwidget.h \
-    sdk.h
+    sdk.h \
+    version.h
 
 FORMS    += mainwindow.ui

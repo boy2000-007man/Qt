@@ -9,7 +9,7 @@ istream& sdk::operator>>(istream &in, Point &point) {
     return in >> point.first >> point.second;
 }
 ostream& sdk::operator<<(ostream &out, const Point &point) {
-    return out << "[" << point.first << "," << point.second << "]";
+    return out << "[" << point.first << ", " << point.second << "]";
 }
 Edge::Edge(Points *points, int begin, int end) : points_(points), begin_(begin), end_(end), L(make_pair(INT_MAX, 0)), U(make_pair(INT_MAX, 0)){
 }
@@ -221,8 +221,12 @@ ostream& sdk::operator<<(ostream &out, const Graph &graph) {
     return out;
 }
 void Graph::calculateGraph() {
-    if (points_.size() < 2)
+    if (points_.size() < 2) {
+        edges_.clear();
+        HVs_.first.clear();
+        HVs_.second.clear();
         return ;
+    }
     SMST();
     L_RST();
 }
@@ -242,17 +246,19 @@ int Graph::searchpoint(const Point &p) {
     return points_[l] == p ? l : -1;
 }
 
-void Graph::addpoint(const Point &p) {
+bool Graph::addpoint(const Point &p) {
     if (searchpoint(p) != -1)
-        return ;
+        return false;
     points_.push_back(p);
     calculateGraph();
+    return true;
 }
-void Graph::deletepoint(const Point &p) {
+bool Graph::deletepoint(const Point &p) {
     int loc = searchpoint(p);
     if (loc == -1)
-        return ;
+        return false;
     points_[loc] = points_.back();
     points_.pop_back();
     calculateGraph();
+    return true;
 }
