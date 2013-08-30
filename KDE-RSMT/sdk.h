@@ -4,7 +4,7 @@
 #include <iostream>
 namespace sdk {
 typedef double PointType;
-typedef std::pair<PointType, PointType> Point;
+typedef std::pair<PointType, PointType> Point, PointPair;
 bool equal(const Point &p1, const Point &p2);
 typedef std::pair<int, int> Pair;
 double distance(const Point &p1, const Point &p2);

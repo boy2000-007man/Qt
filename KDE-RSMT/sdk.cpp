@@ -67,7 +67,7 @@ void Graph::SMST() {
     Points points;
     for (int i = 0; i < points_.size(); i++) {
         points.push_back(points_[i]);
-        while (i < points_.size() && points_[i] == points_[i + 1])
+        while (i < points_.size() && equal(points_[i], points_[i + 1]))
             i++;
     }
     points_ = points;
@@ -112,8 +112,8 @@ static Point make_sortpair(PointType a, PointType b) {
     return make_pair(min(a, b), max(a, b));
 }
 static pair<Tuple, Tuple> hv(const Point &p1, const Point &p2, int LU) {
-    Pair h(make_sortpair(p1.first, p2.first));
-    Pair v(make_sortpair(p1.second, p2.second));
+    PointPair h(make_sortpair(p1.first, p2.first));
+    PointPair v(make_sortpair(p1.second, p2.second));
     Tuple h_ = make_pair(LU % 2 == 0 ? min(p1.second, p2.second) : max(p1.second, p2.second), h);
     Tuple v_ = make_pair(((p1.second < p2.second) ^ (LU % 2 == 0)) ? p1.first : p2.first, v);
     return make_pair(h_, v_);
