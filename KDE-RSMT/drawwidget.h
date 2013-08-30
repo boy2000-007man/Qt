@@ -14,6 +14,8 @@ public:
     void changeZoom(int k);
 private:
     double zoom;
+    bool selectPoint;
+    sdk::Point selectedPoint;
 signals:
 
 public slots:

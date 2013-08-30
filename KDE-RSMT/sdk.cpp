@@ -9,7 +9,7 @@ double sdk::distance(const Point &p1, const Point &p2) {
     return sqrt(pow(p1.first - p2.first, 2) + pow(p1.second - p2.second, 2));
 }
 bool sdk::equal(const Point &p1, const Point &p2) {
-    return abs(sdk::distance(p1, p2) < 1e-4);
+    return abs(sdk::distance(p1, p2) < 1e-3);
 }
 Point sdk::convert(const Point &p, double kx, double ky, double dx, double dy) {
     return make_pair(p.first * kx + dx, p.second * ky + dy);
@@ -64,13 +64,13 @@ static int findroot(vector<int> &root, int order) {
 }
 void Graph::SMST() {
     sort(points_.begin(), points_.end());
-    Points points;
+    /*Points points;
     for (int i = 0; i < points_.size(); i++) {
         points.push_back(points_[i]);
         while (i < points_.size() && equal(points_[i], points_[i + 1]))
             i++;
     }
-    points_ = points;
+    points_ = points;*/
     Edges tmp;
     for (int i = 0; i < points_.size(); i++)
         for (int j = i + 1; j < points_.size(); j++)
@@ -259,7 +259,7 @@ int Graph::searchpoint(const Point &p) {
         else if (points_[(l + r) / 2] > p)
             r = (l + r) / 2;
     }
-    return points_[l] == p ? l : -1;
+    return equal(points_[l], p) ? l : -1;
 }
 
 bool Graph::addpoint(const Point &p) {
