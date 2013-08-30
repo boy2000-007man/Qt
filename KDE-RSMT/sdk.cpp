@@ -168,9 +168,13 @@ static void LU(const vector<vector<int> > &edges, vector<Edge> &edges_, Edge &e)
 }
 istream& sdk::operator>>(istream &in, Graph &graph) {
     graph.points_.clear();
+    int n;
+    in >> n;
     Point tmp;
-    while (in >> tmp)
+    for (int i = 0; i < n; i++) {
+        in >> tmp;
         graph.points_.push_back(tmp);
+    }
     graph.calculateGraph();
     return in;
 }
