@@ -14,7 +14,7 @@ using namespace std;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    drawwidget(new Drawwidget(this))
+    drawwidget(new DrawWidget(this))
 {
     ui->setupUi(this);
     setWindowTitle(name);

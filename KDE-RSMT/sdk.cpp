@@ -5,11 +5,14 @@
 #include <climits>
 using namespace std;
 using namespace sdk;
+double sdk::distance(const Point &p1, const Point &p2) {
+    return sqrt(pow(p1.first - p2.first, 2) + pow(p1.second - p2.second, 2));
+}
 Point sdk::convert(const Point &p, double kx, double ky, double dx, double dy) {
     return make_pair(p.first * kx + dx, p.second * ky + dy);
 }
-Point reconvert(const Point &p, double kx, double ky, double dx, double dy) {
-    return make_pair((p.first - dx) / kx, (p.second - dy) / dy);
+Point sdk::reconvert(const Point &p, double kx, double ky, double dx, double dy) {
+    return make_pair((p.first - dx) / kx, (p.second - dy) / ky);
 }
 istream& sdk::operator>>(istream &in, Point &point) {
     return in >> point.first >> point.second;
@@ -267,4 +270,19 @@ bool Graph::deletepoint(const Point &p) {
     points_.pop_back();
     calculateGraph();
     return true;
+}
+vector<int> Graph::information() const {
+    int minx = INT_MAX, miny = INT_MAX, maxx = INT_MIN, maxy = INT_MIN;
+    for (int i = 0; i < points_.size(); i++) {
+        minx = min(minx, points_[i].first);
+        miny = min(miny, points_[i].second);
+        maxx = max(maxx, points_[i].first);
+        maxy = max(maxy, points_[i].second);
+    }
+    vector<int> info(4);
+    info[0] = minx;
+    info[1] = miny;
+    info[2] = maxx - minx;
+    info[3] = maxy - miny;
+    return info;
 }

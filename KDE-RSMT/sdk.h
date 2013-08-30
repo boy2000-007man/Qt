@@ -4,6 +4,7 @@
 #include <iostream>
 namespace sdk {
 typedef std::pair<int, int> Point, Pair;
+double distance(const Point &p1, const Point &p2);
 Point convert(const Point &p, double kx, double ky, double dx, double dy);
 Point reconvert(const Point &p, double kx, double ky, double dx, double dy);
 std::istream& operator>>(std::istream &in, Point &point);
@@ -38,6 +39,7 @@ class Graph {
     void calculateGraph();
 public:
     Points points() const;
+    std::vector<int> information() const;
     bool addpoint(const Point &p);
     bool deletepoint(const Point &p);
     int searchpoint(const Point &p);

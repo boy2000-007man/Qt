@@ -3,14 +3,17 @@
 
 #include <QWidget>
 #include "sdk.h"
-class Drawwidget : public QWidget
+class DrawWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Drawwidget(QWidget *parent = 0);
+    explicit DrawWidget(QWidget *parent = 0);
     void paintEvent(QPaintEvent *);
     bool eventFilter(QObject *, QEvent *);
     sdk::Graph graph;
+    void changeZoom(int k);
+private:
+    double zoom;
 signals:
 
 public slots:

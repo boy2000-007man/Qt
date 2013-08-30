@@ -14,7 +14,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    Drawwidget *drawwidget;
+    DrawWidget *drawwidget;
 private slots:
     void on_actionOpen_File_triggered();
 
