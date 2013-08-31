@@ -282,8 +282,6 @@ Point Graph::searchNearestPoint(const Point &p) const {
     return points_[nearestPointNumber];
 }
 bool Graph::addPoint(const Point &p) {
-    if (searchPoint(p) != -1)
-        return false;
     points_.push_back(p);
     calculateGraph();
     return true;

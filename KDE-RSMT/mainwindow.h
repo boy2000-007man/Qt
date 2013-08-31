@@ -30,6 +30,8 @@ private slots:
 
     void on_actionShow_Map_triggered();
 
+    void on_actionAdd_Point_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

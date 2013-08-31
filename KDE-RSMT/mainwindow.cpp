@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QFile>
+#include <QInputDialog>
 #include <cmath>
 using namespace std;
 using namespace sdk;
@@ -91,5 +92,25 @@ void MainWindow::on_actionShow_Map_triggered()
     } else {
         ui->actionShow_Map->setText(QString("Show Map"));
         mapWidget->hide();
+    }
+}
+
+void MainWindow::on_actionAdd_Point_triggered()
+{
+    bool isOK = false;
+    double x = QInputDialog::getDouble(this, "Input Point",
+                                                       "Please input X",
+                                                       0.0, INT_MIN, INT_MAX, 1
+                                                       &isOK);
+    if(isOK) {
+        double y = QInputDialog::getDouble(this, "Input Point",
+                                                           "Please input Y",
+                                                           0.0, INT_MIN, INT_MAX, 1
+                                                           &isOK);
+        cerr << x << " " << y << endl;
+        if (isOK) {
+            graph->addPoint(make_pair(x, y));
+            drawWidget->setObjectName(QString("Input Point :[%1, %2]").arg(x).arg(y));
+        }
     }
 }
