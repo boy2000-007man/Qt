@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "version.h"
 #include "sdk.h"
+#include "dialog.h"
 #include "transform.h"
 #include <QObject>
 #include <QFileDialog>
@@ -57,7 +58,7 @@ void MainWindow::on_actionOpen_File_triggered()
     QString fileName = QFileDialog::getOpenFileName(this);
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly))
-        QMessageBox::warning(this, tr("File Open Error!"), tr("An error occur when open selected file."), QMessageBox::Abort);
+        QMessageBox::warning(this, tr("No File Opened!"), tr("Please check your input."), QMessageBox::Abort);
     else {
         QTextStream fin(&file);
         Points points;
@@ -97,20 +98,10 @@ void MainWindow::on_actionShow_Map_triggered()
 
 void MainWindow::on_actionAdd_Point_triggered()
 {
-    bool isOK = false;
-    double x = QInputDialog::getDouble(this, "Input Point",
-                                                       "Please input X",
-                                                       0.0, INT_MIN, INT_MAX, 1
-                                                       &isOK);
-    if(isOK) {
-        double y = QInputDialog::getDouble(this, "Input Point",
-                                                           "Please input Y",
-                                                           0.0, INT_MIN, INT_MAX, 1
-                                                           &isOK);
-        cerr << x << " " << y << endl;
-        if (isOK) {
-            graph->addPoint(make_pair(x, y));
-            drawWidget->setObjectName(QString("Input Point :[%1, %2]").arg(x).arg(y));
-        }
+    Dialog *dialog = new Dialog(this);
+    if (dialog->exec() == QDialog::Accepted) {
+        graph->addPoint(make_pair(dialog->getX(), dialog->getY()));
+        drawWidget->setObjectName(QString("Input Point: [%1, %2]").arg(dialog->getX()).arg(dialog->getY()));
     }
+    delete dialog;
 }
