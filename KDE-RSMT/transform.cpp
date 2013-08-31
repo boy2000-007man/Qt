@@ -8,29 +8,31 @@ Transform::Transform(QWidget *w, Graph *g) : graph(g), widget(w), focusCentral(t
 Point Transform::toGraph(const Point &p) {
     vector<PointType> info = graph->information();
     autoZoom = min(widget->width() / info[2], widget->height() / info[3]);
+    Point gPoint = graphPoint;
+    Point sPoint = screenPoint;
     if (focusCentral) {
-        graphPoint = make_pair(info[0] + 0.5 * info[2], info[1] + 0.5 * info[3]);
-        screenPoint = make_pair(0.5 * widget->width(), 0.5 * widget->height());
+        gPoint = make_pair(info[0] + 0.5 * info[2], info[1] + 0.5 * info[3]);
+        sPoint = make_pair(0.5 * widget->width(), 0.5 * widget->height());
     }
-    PointType dx = (graphPoint.first - info[0]) * zoom * autoZoom - screenPoint.first;
-    PointType dy = (graphPoint.second - info[1]) * zoom * autoZoom - screenPoint.second;
+    PointType dx = (gPoint.first - info[0]) * zoom * autoZoom - sPoint.first;
+    PointType dy = (gPoint.second - info[1]) * zoom * autoZoom - sPoint.second;
     return make_pair((p.first + dx) / zoom / autoZoom + info[0], (p.second + dy) / zoom / autoZoom + info[1]);
 }
 Point Transform::toScreen(const Point &p) {
     vector<PointType> info = graph->information();
     autoZoom = min(widget->width() / info[2], widget->height() / info[3]);
+    Point gPoint = graphPoint;
+    Point sPoint = screenPoint;
     if (focusCentral) {
-        graphPoint = make_pair(info[0] + 0.5 * info[2], info[1] + 0.5 * info[3]);
-        screenPoint = make_pair(0.5 * widget->width(), 0.5 * widget->height());
+        gPoint = make_pair(info[0] + 0.5 * info[2], info[1] + 0.5 * info[3]);
+        sPoint = make_pair(0.5 * widget->width(), 0.5 * widget->height());
     }
-    PointType dx = screenPoint.first - (graphPoint.first - info[0]) * zoom * autoZoom;
-    PointType dy = screenPoint.second - (graphPoint.second - info[1]) * zoom * autoZoom;
+    PointType dx = sPoint.first - (gPoint.first - info[0]) * zoom * autoZoom;
+    PointType dy = sPoint.second - (gPoint.second - info[1]) * zoom * autoZoom;
     return make_pair((p.first - info[0]) * zoom * autoZoom + dx, (p.second - info[1]) * zoom * autoZoom + dy);
 }
-void Transform::setFocusPolicy(bool autoFocus, Point screenP, Point graphP) {
+void Transform::setFocusPolicy(bool autoFocus) {
     focusCentral = autoFocus;
-    screenPoint = screenP;
-    graphPoint = graphP;
 }
 void Transform::changeZoom(double k) {
     zoom *= pow(zoomRate, k);

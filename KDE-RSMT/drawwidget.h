@@ -15,7 +15,6 @@ public:
     sdk::Transform *transform;
 private:
     sdk::Point pointSelected;
-    bool selectPoint;
 signals:
 
 public slots:

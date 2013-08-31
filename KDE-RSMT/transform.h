@@ -14,7 +14,7 @@ public:
     Transform(QWidget *w, Graph *g);
     Point toScreen(const Point &p);
     Point toGraph(const Point &p);
-    void setFocusPolicy(bool autoFocus = true, Point screenP = Point(), Point graphP = Point());
+    void setFocusPolicy(bool autoFocus = true);
     void changeZoom(double k);
     void setZoom(double z);
     void setZoomRate(double zoomR);

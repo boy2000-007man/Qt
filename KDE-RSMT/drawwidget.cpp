@@ -9,8 +9,7 @@ using namespace sdk;
 DrawWidget::DrawWidget(QWidget *parent, Graph *g, Transform *t) :
     QWidget(parent),
     graph(g),
-    transform(t),
-    selectPoint(false) {
+    transform(t) {
 }
 void DrawWidget::paintEvent(QPaintEvent *) {
     if (graph->points().size() == 0)
@@ -37,21 +36,28 @@ void DrawWidget::paintEvent(QPaintEvent *) {
     }
 }
 bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
+    static int mouseStatus = 0;
     if (obj == this)
         if (graph->points().size() == 0)
             return false;
         else if (eve->type() == QEvent::MouseMove) {
-            if (selectPoint) {
-                QMouseEvent *m = static_cast<QMouseEvent *>(eve);
+            QMouseEvent *m = static_cast<QMouseEvent *>(eve);
+            Point cursorScreenPoint = make_pair(m->x(), m->y());
+            Point cursorGraphPoint = transform->toGraph(cursorScreenPoint);
 
-                //cerr << "detect move" << endl;
-                Point cursorGraphPoint = transform->toGraph(make_pair(m->x(), m->y()));
+            if (mouseStatus == 1) {
 
                 graph->deletePoint(pointSelected);
                 graph->addPoint(pointSelected = cursorGraphPoint);
                 setObjectName(QString("Move Point: [%1, %2]").arg(cursorGraphPoint.first).arg(cursorGraphPoint.second));
-                return true;
+            } else if (mouseStatus == 2){
+
+                transform->setScreenPoint(cursorScreenPoint);
+                transform->setFocusPolicy(false);
+                cerr << "cursorPoint" << m->x() << "," << m->y() << endl;
+                setObjectName(QString("Move Screen: [%1, %2]").arg(cursorScreenPoint.first).arg(cursorScreenPoint.second));
             }
+            return true;
         } else if (eve->type() == QEvent::MouseButtonPress) {
             QMouseEvent *m = static_cast<QMouseEvent *>(eve);
 
@@ -62,14 +68,14 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
             //PointType shortestGraphDistance = sdk::distance(cursorGraphPoint, nearestGraphPoint);
             PointType shortestScreenDistance = sdk::distance(cursorScreenPoint, nearestScreenPoint);
 
-            selectPoint = false;
+            mouseStatus = 0;
             switch (m->button()) {
                 case Qt::LeftButton:
                     if (shortestScreenDistance > 7) {
                         graph->addPoint(cursorGraphPoint);
                         setObjectName(QString("Add Point: [%1, %2]").arg(cursorGraphPoint.first).arg(cursorGraphPoint.second));
                     } else {
-                        selectPoint = true;
+                        mouseStatus = 1;
                         pointSelected = nearestGraphPoint;
                         setObjectName(QString("Select Point: [%1, %2]").arg(pointSelected.first).arg(pointSelected.second));
                     }
@@ -79,8 +85,14 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
                         graph->deletePoint(nearestGraphPoint);
                         setObjectName(QString("Delete Point: [%1, %2]").arg(nearestGraphPoint.first).arg(nearestGraphPoint.second));
                     } else {
-                        setObjectName(QString("No Point Delete"));
+                        mouseStatus = 2;
+                        transform->setScreenPoint(cursorScreenPoint);
+                        transform->setGraphPoint(cursorGraphPoint);
+                        cerr << "cursorGraphPoint" << cursorGraphPoint.first << "," << cursorGraphPoint.second << endl;
+                        setObjectName(QString("Ready To Move"));
                     }
+                    break;
+                default:
                     break;
             }
             return true;
@@ -90,7 +102,9 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
                     transform->changeZoom(w->delta() / 120);
                 cerr << w->delta();
                 Point cursorScreenPoint = make_pair(w->x(), w->y());
-                transform->setFocusPolicy(false, cursorScreenPoint, transform->toGraph(cursorScreenPoint));
+                transform->setGraphPoint(transform->toGraph(cursorScreenPoint));
+                transform->setScreenPoint(cursorScreenPoint);
+                transform->setFocusPolicy(false);
                 setObjectName(QString("Zoom: %1%").arg(transform->getZoom() * 100));
             return true;
         }
