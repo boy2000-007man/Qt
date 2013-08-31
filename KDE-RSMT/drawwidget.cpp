@@ -44,7 +44,7 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
             if (selectPoint) {
                 QMouseEvent *m = static_cast<QMouseEvent *>(eve);
 
-                cerr << "detect move" << endl;
+                //cerr << "detect move" << endl;
                 Point cursorGraphPoint = transform->toGraph(make_pair(m->x(), m->y()));
 
                 graph->deletePoint(pointSelected);

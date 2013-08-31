@@ -7,7 +7,8 @@ namespace sdk {
 typedef double PointType;
 typedef std::pair<PointType, PointType> Point, PointPair;
 bool equal(const Point &p1, const Point &p2);
-typedef std::pair<int, int> Pair;
+bool equal(const PointType &p1, const PointType &p2);
+typedef std::pair<PointType, int> Pair;
 double distance(const Point &p1, const Point &p2);
 Point convert(const Point &p, double kx, double ky, double dx, double dy);
 Point reconvert(const Point &p, double kx, double ky, double dx, double dy);

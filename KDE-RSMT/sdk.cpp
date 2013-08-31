@@ -11,6 +11,9 @@ double sdk::distance(const Point &p1, const Point &p2) {
 bool sdk::equal(const Point &p1, const Point &p2) {
     return abs(sdk::distance(p1, p2) < ZERO);
 }
+bool sdk::equal(const PointType &p1, const PointType &p2) {
+    return abs(p1 - p2) < ZERO;
+}
 Point sdk::convert(const Point &p, double kx, double ky, double dx, double dy) {
     return make_pair(p.first * kx + dx, p.second * ky + dy);
 }
@@ -23,7 +26,7 @@ istream& sdk::operator>>(istream &in, Point &point) {
 ostream& sdk::operator<<(ostream &out, const Point &point) {
     return out << "[" << point.first << ", " << point.second << "]";
 }
-Edge::Edge(Points *points, int begin, int end) : points_(points), begin_(begin), end_(end), L(make_pair(INT_MAX, 0)), U(make_pair(INT_MAX, 0)){
+Edge::Edge(Points *points, int begin, int end) : points_(points), begin_(begin), end_(end), L(make_pair(-1, 0)), U(make_pair(-1, 0)){
 }
 void Edge::reverse() {
     int tmp = begin_;
@@ -118,7 +121,7 @@ static pair<Tuple, Tuple> hv(const Point &p1, const Point &p2, int LU) {
     Tuple v_ = make_pair(((p1.second < p2.second) ^ (LU % 2 == 0)) ? p1.first : p2.first, v);
     return make_pair(h_, v_);
 }
-static int overlapmax(const vector<int> &edges, const Edges edges_, int LU) {
+static PointType overlapmax(const vector<int> &edges, const Edges edges_, int LU) {
     Tuples H, V;
     for (int i = 0; i < edges.size(); i++) {
         const Edge &e = edges_[edges[i]];
@@ -128,16 +131,24 @@ static int overlapmax(const vector<int> &edges, const Edges edges_, int LU) {
     }
     sort(H.begin(), H.end());
     sort(V.begin(), V.end());
+    /*if (edges.back() == 0) {
+        cerr << "H:" << endl;
+        for (int i = 0; i < H.size(); i++)
+            cerr << H[i].first << " " << H[i].second << endl;
+        cerr << "V:" << endl;
+        for (int i = 0; i < V.size(); i++)
+            cerr << V[i].first << " " << V[i].second << endl;
+    }*/
     PointType overlapsum = 0;
     for (int i = 0; i < H.size(); i++)
         overlapsum += H[i].second.second - H[i].second.first;
     for (int i = 0; i < V.size(); i++)
         overlapsum += V[i].second.second - V[i].second.first;
     for (int i = 1; i < H.size(); i++)
-        if (H[i - 1].first == H[i].first && H[i - 1].second.second > H[i].second.first)
+        if (equal(H[i - 1].first, H[i].first) && H[i - 1].second.second > H[i].second.first)
             H[i - 1].second.second = H[i].second.first;
     for (int i = 1; i < V.size(); i++)
-        if (V[i - 1].first == V[i].first && V[i - 1].second.second > V[i].second.first)
+        if (equal(V[i - 1].first, V[i].first) && V[i - 1].second.second > V[i].second.first)
             V[i - 1].second.second = V[i].second.first;
     for (int i = 0; i < H.size(); i++)
         overlapsum -= H[i].second.second - H[i].second.first;
@@ -145,10 +156,10 @@ static int overlapmax(const vector<int> &edges, const Edges edges_, int LU) {
         overlapsum -= V[i].second.second - V[i].second.first;
     return overlapsum;
 }
-static void LU(const vector<vector<int> > &edges, vector<Edge> &edges_, Edge &e) {
+static void LU(const vector<vector<int> > &edges, Edges &edges_, Edge &e) {
     Pair &L = e.L;
     Pair &U = e.U;
-    if (L.first != INT_MAX || U.first != INT_MAX)
+    if (L.first > 0 && U.first > 0)
         return ;
     if (edges[e.end()].size() == 1) {
         L = U = make_pair(dist(e.beginp(), e.endp()), 0);
@@ -158,15 +169,16 @@ static void LU(const vector<vector<int> > &edges, vector<Edge> &edges_, Edge &e)
         PointType tmp = dist(e.beginp(), e.endp()) - overlapmax(edges[e.end()], edges_, i);
         for (int j = 0; j < edges[e.end()].size() - 1; j++) {
             LU(edges, edges_, edges_[edges[e.end()][j]]);
-            if ((i >> edges[e.end()].size() - i - 1) % 2 == 0)
+            if ((i >> edges[e.end()].size() - j - 1) % 2 == 0)
                 tmp += edges_[edges[e.end()][j]].L.first;
             else
                 tmp += edges_[edges[e.end()][j]].U.first;
         }
-        if (i % 2 == 0 && L.first > tmp)
-            L = make_pair(tmp, i >> 1);
-        if (i % 2 == 1 && U.first > tmp)
-            U = make_pair(tmp, i >> 1);
+    //cerr << tmp << " " << i << endl;
+        if (i % 2 == 0 && (L.first > tmp || L.first < 0))
+            L = make_pair(tmp, i);
+        if (i % 2 == 1 && (U.first > tmp || U.first < 0))
+            U = make_pair(tmp, i);
     }
 }
 istream& sdk::operator>>(istream &in, Graph &graph) {
@@ -185,10 +197,10 @@ static pair<Tuples, Tuples> HV(const vector<vector<int> > &edges, const Edges &e
     Tuples H, V;
     for (int i = 0; i < edges[e.end()].size() - 1; i++) {
         const Edge &n_e = edges_[edges[e.end()][i]];
-        const pair<Tuple, Tuple> hv_ = hv(n_e.beginp(), n_e.endp(), LU >> edges.size() - i - 1);
+        const pair<Tuple, Tuple> hv_ = hv(n_e.beginp(), n_e.endp(), LU >> edges[e.end()].size() - i - 1);
         H.push_back(hv_.first);
         V.push_back(hv_.second);
-        pair<Tuples, Tuples> HVs = HV(edges, edges_, n_e, (LU >> edges.size() - i - 1) % 2 == 0 ? n_e.L.second : n_e.U.second);
+        pair<Tuples, Tuples> HVs = HV(edges, edges_, n_e, (LU >> edges[e.end()].size() - i - 1) % 2 == 0 ? n_e.L.second : n_e.U.second);
         for (int i = 0; i < HVs.first.size(); i++)
             H.push_back(HVs.first[i]);
         for (int i = 0; i < HVs.second.size(); i++)
@@ -245,6 +257,7 @@ void Graph::calculateGraph() {
     }
     SMST();
     L_RST();
+    cerr << *this << endl;
 }
 Points Graph::points() const {
     return points_;
