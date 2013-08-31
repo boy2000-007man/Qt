@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     drawWidget->transform = drawTransform;
     mapWidget->transform = mapTransform;
 
+    mapWidget->setDrawWidget(drawWidget);
     mapWidget->setFixedSize(150, 150);
     mapWidget->setLineSize(0.0);
     mapWidget->setPointSize(4.0);

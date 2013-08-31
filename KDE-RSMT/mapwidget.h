@@ -7,8 +7,11 @@ class MapWidget : public DrawWidget
     Q_OBJECT
 public:
     MapWidget(QWidget *parent = 0, sdk::Graph *g = 0, sdk::Transform *t = 0);
-    //void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *);
     bool eventFilter(QObject *, QEvent *);
+    void setDrawWidget(DrawWidget *dw);
+private:
+    DrawWidget *drawWidget;
 signals:
     void clickPoint(double, double);
 };

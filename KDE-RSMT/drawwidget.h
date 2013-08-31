@@ -15,7 +15,7 @@ public:
     sdk::Transform *transform;
     void setPointSize(double s);
     void setLineSize(double s);
-private:
+protected:
     double pointSize, lineSize;
 signals:
 public slots:
