@@ -3,19 +3,19 @@
 
 #include <QWidget>
 #include "sdk.h"
+#include "transform.h"
 class DrawWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit DrawWidget(QWidget *parent = 0);
+    explicit DrawWidget(QWidget *parent = 0, sdk::Graph *g = 0, sdk::Transform *t = 0);
     void paintEvent(QPaintEvent *);
     bool eventFilter(QObject *, QEvent *);
-    sdk::Graph graph;
-    void changeZoom(int k);
+    sdk::Graph *graph;
+    sdk::Transform *transform;
 private:
-    double zoom;
+    sdk::Point pointSelected;
     bool selectPoint;
-    sdk::Point selectedPoint;
 signals:
 
 public slots:

@@ -9,7 +9,7 @@ double sdk::distance(const Point &p1, const Point &p2) {
     return sqrt(pow(p1.first - p2.first, 2) + pow(p1.second - p2.second, 2));
 }
 bool sdk::equal(const Point &p1, const Point &p2) {
-    return abs(sdk::distance(p1, p2) < 1e-3);
+    return abs(sdk::distance(p1, p2) < ZERO);
 }
 Point sdk::convert(const Point &p, double kx, double ky, double dx, double dy) {
     return make_pair(p.first * kx + dx, p.second * ky + dy);
@@ -249,7 +249,7 @@ void Graph::calculateGraph() {
 Points Graph::points() const {
     return points_;
 }
-int Graph::searchpoint(const Point &p) {
+int Graph::searchPoint(const Point &p) const {
     int l = 0, r = points_.size() - 1;
     while (l < r) {
         if (equal(points_[(l + r) / 2], p))
@@ -261,16 +261,22 @@ int Graph::searchpoint(const Point &p) {
     }
     return equal(points_[l], p) ? l : -1;
 }
-
-bool Graph::addpoint(const Point &p) {
-    if (searchpoint(p) != -1)
+Point Graph::searchNearestPoint(const Point &p) const {
+    int nearestPointNumber = 0;
+    for (int i = 1; i < points_.size(); i++)
+        if (sdk::distance(p, points_[i]) < sdk::distance(p, points_[nearestPointNumber]))
+            nearestPointNumber = i;
+    return points_[nearestPointNumber];
+}
+bool Graph::addPoint(const Point &p) {
+    if (searchPoint(p) != -1)
         return false;
     points_.push_back(p);
     calculateGraph();
     return true;
 }
-bool Graph::deletepoint(const Point &p) {
-    int loc = searchpoint(p);
+bool Graph::deletePoint(const Point &p) {
+    int loc = searchPoint(p);
     if (loc == -1)
         return false;
     points_[loc] = points_.back();

@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     drawwidget.cpp \
-    sdk.cpp
+    sdk.cpp \
+    transform.cpp
 
 HEADERS  += mainwindow.h \
     drawwidget.h \
     sdk.h \
-    version.h
+    version.h \
+    transform.h
 
 FORMS    += mainwindow.ui

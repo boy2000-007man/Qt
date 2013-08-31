@@ -1,5 +1,6 @@
 #ifndef __SDK_H__
 #define __SDK_H__
+#define ZERO 1e-3
 #include <vector>
 #include <iostream>
 namespace sdk {
@@ -43,9 +44,10 @@ class Graph {
 public:
     Points points() const;
     std::vector<PointType> information() const;
-    bool addpoint(const Point &p);
-    bool deletepoint(const Point &p);
-    int searchpoint(const Point &p);
+    bool addPoint(const Point &p);
+    bool deletePoint(const Point &p);
+    int searchPoint(const Point &p) const;
+    Point searchNearestPoint(const Point &p) const;
     std::pair<Tuples, Tuples> HVs_;
     friend std::istream& operator>>(std::istream &in, Graph &graph);
     friend std::ostream& operator<<(std::ostream &out, const Graph &graph);
