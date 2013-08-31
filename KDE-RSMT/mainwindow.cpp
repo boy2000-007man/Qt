@@ -19,21 +19,35 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setMinimumSize(800, 600);
     setWindowTitle(name);
-    Graph *graph = new Graph;
+    graph = new Graph;
     drawWidget = new DrawWidget(this, graph);
-    Transform *transform = new Transform(drawWidget, graph);
-    drawWidget->transform = transform;
+    mapWidget = new MapWidget(0, graph);
+    drawTransform = new Transform(drawWidget, graph);
+    mapTransform = new Transform(mapWidget, graph);
+    drawWidget->transform = drawTransform;
+    mapWidget->transform = mapTransform;
+    mapWidget->setMaximumSize(200, 200);
+    mapWidget->setLineSize(0.0);
+    mapWidget->setPointSize(4.0);
+    //mapWidget->show();
     setCentralWidget(drawWidget);
+    mapWidget->installEventFilter(mapWidget);
     centralWidget()->installEventFilter(centralWidget());
+    QObject::connect(mapWidget, SIGNAL(clickPoint(double, double)), drawWidget, SLOT(targetTo(double, double)));
     QObject::connect(centralWidget(), SIGNAL(objectNameChanged(QString)), statusBar(), SLOT(showMessage(QString)));
     QObject::connect(centralWidget(), SIGNAL(objectNameChanged(QString)), centralWidget(), SLOT(update()));
+    QObject::connect(centralWidget(), SIGNAL(objectNameChanged(QString)), mapWidget, SLOT(update()));
     statusBar()->setSizeGripEnabled(false);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete drawWidget;
+    delete mapWidget;
+    delete graph;
 }
 
 void MainWindow::on_actionOpen_File_triggered()
@@ -43,7 +57,7 @@ void MainWindow::on_actionOpen_File_triggered()
     if (filename == "")
         return ;
     ifstream fin(filename.c_str());
-    cerr << "Open File: " << filename << endl;
+
     statusBar()->showMessage(QString("Open File: %1").arg(filename.c_str()));
     if (!fin)
         QMessageBox::warning(this, tr("File Open Error!"), tr("An error occur when open selected file."), QMessageBox::Abort);
@@ -51,11 +65,7 @@ void MainWindow::on_actionOpen_File_triggered()
         cerr << "Reading ..." << endl;
         fin >> *(drawWidget->graph);
         fin.close();
-        centralWidget()->update();
-        using namespace sdk;
-        for (int i = 0; i < drawWidget->graph->points().size(); i++)
-            cerr << "Add Point: " << drawWidget->graph->points()[i] << endl;
-        //cerr << drawWidget->graph << endl;
+        statusBar()->showMessage(QString("File: %1 Open Complete").arg(filename.c_str()));
     }
 }
 
@@ -67,4 +77,9 @@ void MainWindow::on_actionExit_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
     QMessageBox::about(this, "version", version);
+}
+
+void MainWindow::on_actionShow_Map_triggered()
+{
+    mapWidget->show();
 }

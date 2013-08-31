@@ -18,9 +18,9 @@ public:
 private:
     double pointSize, lineSize;
 signals:
-
+    void clickPoint(double, double);
 public slots:
-    
+    void targetTo(double x, double y);
 };
 
 #endif // DRAWWIDGET_H

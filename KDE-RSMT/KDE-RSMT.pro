@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     drawwidget.cpp \
     sdk.cpp \
-    transform.cpp
+    transform.cpp \
+    mapwidget.cpp
 
 HEADERS  += mainwindow.h \
     drawwidget.h \
     sdk.h \
     version.h \
-    transform.h
+    transform.h \
+    mapwidget.h
 
 FORMS    += mainwindow.ui

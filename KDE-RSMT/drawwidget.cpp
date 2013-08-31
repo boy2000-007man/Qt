@@ -11,6 +11,12 @@ DrawWidget::DrawWidget(QWidget *parent, Graph *g, Transform *t) :
     graph(g), pointSize(7.0), lineSize(3.0),
     transform(t) {
 }
+void DrawWidget::targetTo(double x, double y) {
+    transform->setFocusPolicy(false);
+    transform->setGraphPoint(make_pair(x, y));
+    transform->setScreenPoint(make_pair(0.5 * width(), 0.5 * height()));
+    setObjectName(QString("Target To Point: [%1, %2]").arg(x).arg(y));
+}
 void DrawWidget::setPointSize(double s) {
     pointSize = s;
 }
