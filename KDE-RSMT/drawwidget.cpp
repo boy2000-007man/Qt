@@ -8,15 +8,21 @@ using namespace std;
 using namespace sdk;
 DrawWidget::DrawWidget(QWidget *parent, Graph *g, Transform *t) :
     QWidget(parent),
-    graph(g),
+    graph(g), pointSize(7.0), lineSize(3.0),
     transform(t) {
+}
+void DrawWidget::setPointSize(double s) {
+    pointSize = s;
+}
+void DrawWidget::setLineSize(double s) {
+    lineSize = s;
 }
 void DrawWidget::paintEvent(QPaintEvent *) {
     if (graph->points().size() == 0)
         return ;
 
     QPainter painter(this);
-    painter.setPen(QPen(Qt::black, 3));
+    painter.setPen(QPen(Qt::black, lineSize));
     const Tuples &H = graph->HVs_.first, &V = graph->HVs_.second;
     for (int i = 0; i < H.size(); i++) {
         const Point p1 = transform->toScreen(make_pair(H[i].second.first, H[i].first));
@@ -29,7 +35,7 @@ void DrawWidget::paintEvent(QPaintEvent *) {
         painter.drawLine(p1.first, p1.second, p2.first, p2.second);
     }
 
-    painter.setPen(QPen(Qt::green, 7));
+    painter.setPen(QPen(Qt::green, pointSize));
     for (int i = 0; i < graph->points().size(); i++) {
         const Point p = transform->toScreen(graph->points()[i]);
         painter.drawPoint(p.first, p.second);
@@ -37,6 +43,7 @@ void DrawWidget::paintEvent(QPaintEvent *) {
 }
 bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
     static int mouseStatus = 0;
+    static sdk::Point pointSelected;
     if (obj == this)
         if (graph->points().size() == 0)
             return false;
@@ -71,7 +78,7 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
             mouseStatus = 0;
             switch (m->button()) {
                 case Qt::LeftButton:
-                    if (shortestScreenDistance > 7) {
+                    if (shortestScreenDistance > pointSize) {
                         graph->addPoint(cursorGraphPoint);
                         setObjectName(QString("Add Point: [%1, %2]").arg(cursorGraphPoint.first).arg(cursorGraphPoint.second));
                     } else {
@@ -81,7 +88,7 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
                     }
                     break;
                 case Qt::RightButton:
-                    if (shortestScreenDistance < 5) {
+                    if (shortestScreenDistance < pointSize) {
                         graph->deletePoint(nearestGraphPoint);
                         setObjectName(QString("Delete Point: [%1, %2]").arg(nearestGraphPoint.first).arg(nearestGraphPoint.second));
                     } else {

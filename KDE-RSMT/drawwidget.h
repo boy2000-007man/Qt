@@ -13,8 +13,10 @@ public:
     bool eventFilter(QObject *, QEvent *);
     sdk::Graph *graph;
     sdk::Transform *transform;
+    void setPointSize(double s);
+    void setLineSize(double s);
 private:
-    sdk::Point pointSelected;
+    double pointSize, lineSize;
 signals:
 
 public slots:
