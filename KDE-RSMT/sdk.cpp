@@ -312,3 +312,11 @@ vector<PointType> Graph::information() const {
     info[3] = maxy - miny;
     return info;
 }
+void Graph::setPoints(const Points &ps) {
+    points_ = ps;
+    calculateGraph();
+}
+void Graph::changePoint(const Point &op, const Point &np) {
+    points_[searchPoint(op)] = np;
+    calculateGraph();
+}

@@ -43,10 +43,12 @@ class Graph {
     std::vector<Edge> edges_;
     void calculateGraph();
 public:
+    void setPoints(const Points &ps);
     Points points() const;
     std::vector<PointType> information() const;
     bool addPoint(const Point &p);
     bool deletePoint(const Point &p);
+    void changePoint(const Point &op, const Point &np);
     int searchPoint(const Point &p) const;
     Point searchNearestPoint(const Point &p) const;
     std::pair<Tuples, Tuples> HVs_;

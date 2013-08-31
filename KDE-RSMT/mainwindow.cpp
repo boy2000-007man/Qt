@@ -9,8 +9,7 @@
 #include <QWidget>
 #include <QMessageBox>
 #include <QString>
-#include <string>
-#include <fstream>
+#include <QFile>
 #include <cmath>
 using namespace std;
 using namespace sdk;
@@ -19,21 +18,23 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setMinimumSize(800, 600);
     setWindowTitle(name);
+    setMinimumSize(800, 600);
     graph = new Graph;
     drawWidget = new DrawWidget(this, graph);
-    mapWidget = new MapWidget(0, graph);
+    mapWidget = new MapWidget(drawWidget, graph);
     drawTransform = new Transform(drawWidget, graph);
     mapTransform = new Transform(mapWidget, graph);
     drawWidget->transform = drawTransform;
     mapWidget->transform = mapTransform;
-    mapWidget->setMaximumSize(200, 200);
+
+    mapWidget->setFixedSize(150, 150);
     mapWidget->setLineSize(0.0);
     mapWidget->setPointSize(4.0);
-    //mapWidget->show();
-    setCentralWidget(drawWidget);
+    mapWidget->hide();
     mapWidget->installEventFilter(mapWidget);
+
+    setCentralWidget(drawWidget);
     centralWidget()->installEventFilter(centralWidget());
     QObject::connect(mapWidget, SIGNAL(clickPoint(double, double)), drawWidget, SLOT(targetTo(double, double)));
     QObject::connect(centralWidget(), SIGNAL(objectNameChanged(QString)), statusBar(), SLOT(showMessage(QString)));
@@ -45,27 +46,30 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete drawWidget;
-    delete mapWidget;
     delete graph;
+    delete drawTransform;
+    delete mapTransform;
 }
 
 void MainWindow::on_actionOpen_File_triggered()
 {
-    QFileDialog *open_file = new QFileDialog(this);
-    const string filename = open_file->getOpenFileName().toStdString();
-    if (filename == "")
-        return ;
-    ifstream fin(filename.c_str());
-
-    statusBar()->showMessage(QString("Open File: %1").arg(filename.c_str()));
-    if (!fin)
+    QString fileName = QFileDialog::getOpenFileName(this);
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
         QMessageBox::warning(this, tr("File Open Error!"), tr("An error occur when open selected file."), QMessageBox::Abort);
     else {
-        cerr << "Reading ..." << endl;
-        fin >> *(drawWidget->graph);
-        fin.close();
-        statusBar()->showMessage(QString("File: %1 Open Complete").arg(filename.c_str()));
+        QTextStream fin(&file);
+        Points points;
+        int num;
+        fin >> num;
+        for (int i = 0; i < num; i++) {
+            Point tmp;
+            fin >> tmp.first >> tmp.second;
+            points.push_back(tmp);
+        }
+        file.close();
+        graph->setPoints(points);
+        statusBar()->showMessage(QString("File: %1 Open Complete").arg(fileName));
     }
 }
 
@@ -81,5 +85,11 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionShow_Map_triggered()
 {
-    mapWidget->show();
+    if (mapWidget->isHidden()) {
+        ui->actionShow_Map->setText(QString("Hide Map"));
+        mapWidget->show();
+    } else {
+        ui->actionShow_Map->setText(QString("Show Map"));
+        mapWidget->hide();
+    }
 }

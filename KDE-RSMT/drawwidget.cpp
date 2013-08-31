@@ -60,8 +60,8 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
 
             if (mouseStatus == 1) {
 
-                graph->deletePoint(pointSelected);
-                graph->addPoint(pointSelected = cursorGraphPoint);
+                graph->changePoint(pointSelected, cursorGraphPoint);
+                pointSelected = cursorGraphPoint;
                 setObjectName(QString("Move Point: [%1, %2]").arg(cursorGraphPoint.first).arg(cursorGraphPoint.second));
             } else if (mouseStatus == 2){
 

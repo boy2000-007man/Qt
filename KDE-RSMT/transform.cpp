@@ -8,6 +8,7 @@ Transform::Transform(QWidget *w, Graph *g) : graph(g), widget(w), focusCentral(t
 Point Transform::toGraph(const Point &p) {
     vector<PointType> info = graph->information();
     autoZoom = min(widget->width() / info[2], widget->height() / info[3]);
+    autoZoom = min(autoZoom, (double)INT_MAX);
     Point gPoint = graphPoint;
     Point sPoint = screenPoint;
     if (focusCentral) {
@@ -21,6 +22,7 @@ Point Transform::toGraph(const Point &p) {
 Point Transform::toScreen(const Point &p) {
     vector<PointType> info = graph->information();
     autoZoom = min(widget->width() / info[2], widget->height() / info[3]);
+    autoZoom = min(autoZoom, (double)INT_MAX);
     Point gPoint = graphPoint;
     Point sPoint = screenPoint;
     if (focusCentral) {
