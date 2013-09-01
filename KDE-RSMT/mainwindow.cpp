@@ -74,6 +74,7 @@ void MainWindow::on_actionOpen_File_triggered()
         }
         file.close();
         graph->setPoints(points);
+        drawWidget->transform->setFocusPolicy();
         statusBar()->showMessage(QString("Open File: %1").arg(fileName));
     }
 }
@@ -104,7 +105,6 @@ void MainWindow::on_actionAdd_Point_triggered()
     Dialog *dialog = new Dialog(this);
     if (dialog->exec() == QDialog::Accepted) {
         graph->addPoint(make_pair(dialog->getX(), dialog->getY()));
-        drawWidget->transform->setFocusPolicy();
         drawWidget->setObjectName(QString("Input Point: [%1, %2]").arg(dialog->getX()).arg(dialog->getY()));
     }
     delete dialog;
