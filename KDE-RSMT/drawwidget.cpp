@@ -67,7 +67,6 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
 
                 transform->setScreenPoint(cursorScreenPoint);
                 transform->setFocusPolicy(false);
-                cerr << "cursorPoint" << m->x() << "," << m->y() << endl;
                 setObjectName(QString("Move Screen: [%1, %2]").arg(cursorScreenPoint.first).arg(cursorScreenPoint.second));
             }
             return true;
@@ -101,7 +100,6 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
                         mouseStatus = 2;
                         transform->setScreenPoint(cursorScreenPoint);
                         transform->setGraphPoint(cursorGraphPoint);
-                        cerr << "cursorGraphPoint" << cursorGraphPoint.first << "," << cursorGraphPoint.second << endl;
                         setObjectName(QString("Ready To Move"));
                     }
                     break;
@@ -112,8 +110,7 @@ bool DrawWidget::eventFilter(QObject *obj, QEvent *eve) {
         } else if (eve->type() == QEvent::Wheel) {
                 QWheelEvent *w = static_cast<QWheelEvent *>(eve);
                 if (w->orientation() == Qt::Vertical)
-                    transform->changeZoom(w->delta() / 120);
-                cerr << w->delta();
+                    transform->changeZoom(w->delta() / 120.0);
                 Point cursorScreenPoint = make_pair(w->x(), w->y());
                 transform->setGraphPoint(transform->toGraph(cursorScreenPoint));
                 transform->setScreenPoint(cursorScreenPoint);

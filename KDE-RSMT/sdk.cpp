@@ -250,14 +250,12 @@ ostream& sdk::operator<<(ostream &out, const Graph &graph) {
 }
 void Graph::calculateGraph() {
     if (points_.size() < 2) {
-        edges_.clear();
         HVs_.first.clear();
         HVs_.second.clear();
         return ;
     }
     SMST();
     L_RST();
-    cerr << *this << endl;
 }
 Points Graph::points() const {
     return points_;

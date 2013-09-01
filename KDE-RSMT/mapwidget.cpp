@@ -30,21 +30,22 @@ void MapWidget::paintEvent(QPaintEvent *p) {
     painter.drawPoint((sLB.first + sRT.first) * 0.5, (sLB.second + sRT.second) * 0.5);
 }
 bool MapWidget::eventFilter(QObject *obj, QEvent *eve) {
+    static int mouseStatus = 0;
     if (obj == this)
         if (graph->points().size() == 0)
             return false;
         else if (eve->type() == QEvent::MouseButtonPress) {
-            cerr << "pressbutton" << endl;
             QMouseEvent *m = static_cast<QMouseEvent *>(eve);
-            if (m->button() != Qt::LeftButton)
+            if (m->button() != Qt::LeftButton) {
+                mouseStatus = 0;
                 return false;
+            }
+            mouseStatus = 1;
             Point cursorScreenPoint = make_pair(m->x(), m->y());
             Point cursorGraphPoint = transform->toGraph(cursorScreenPoint);
             emit clickPoint(cursorGraphPoint.first, cursorGraphPoint.second);
-            cerr << "cursorG" << cursorGraphPoint.first << "," << cursorGraphPoint.second << endl;
             return true;
-        } else if (eve->type() == QEvent::MouseMove) {
-            cerr << "moveG";
+        } else if (eve->type() == QEvent::MouseMove && mouseStatus == 1) {
             QMouseEvent *m = static_cast<QMouseEvent *>(eve);
             Point cursorScreenPoint = make_pair(m->x(), m->y());
             Point cursorGraphPoint = transform->toGraph(cursorScreenPoint);

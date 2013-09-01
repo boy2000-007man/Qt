@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mapWidget->setDrawWidget(drawWidget);
     mapWidget->setFixedSize(150, 150);
     mapWidget->setLineSize(0.0);
-    mapWidget->setPointSize(4.0);
+    mapWidget->setPointSize(3.0);
     mapWidget->hide();
     mapWidget->installEventFilter(mapWidget);
 
@@ -57,6 +57,8 @@ MainWindow::~MainWindow()
 void MainWindow::on_actionOpen_File_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
+    if (fileName == "")
+        return ;
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly))
         QMessageBox::warning(this, tr("No File Opened!"), tr("Please check your input."), QMessageBox::Abort);
@@ -72,7 +74,7 @@ void MainWindow::on_actionOpen_File_triggered()
         }
         file.close();
         graph->setPoints(points);
-        statusBar()->showMessage(QString("File: %1 Open Complete").arg(fileName));
+        statusBar()->showMessage(QString("Open File: %1").arg(fileName));
     }
 }
 
@@ -89,11 +91,11 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_actionShow_Map_triggered()
 {
     if (mapWidget->isHidden()) {
-        ui->actionShow_Map->setText(QString("Hide Map"));
         mapWidget->show();
+        ui->actionShow_Map->setText(QString("Hide Map"));
     } else {
-        ui->actionShow_Map->setText(QString("Show Map"));
         mapWidget->hide();
+        ui->actionShow_Map->setText(QString("Show Map"));
     }
 }
 
@@ -102,6 +104,7 @@ void MainWindow::on_actionAdd_Point_triggered()
     Dialog *dialog = new Dialog(this);
     if (dialog->exec() == QDialog::Accepted) {
         graph->addPoint(make_pair(dialog->getX(), dialog->getY()));
+        drawWidget->transform->setFocusPolicy();
         drawWidget->setObjectName(QString("Input Point: [%1, %2]").arg(dialog->getX()).arg(dialog->getY()));
     }
     delete dialog;

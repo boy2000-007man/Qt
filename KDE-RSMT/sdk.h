@@ -1,6 +1,6 @@
 #ifndef __SDK_H__
 #define __SDK_H__
-#define ZERO 1e-6
+#define ZERO 1e-9
 #include <vector>
 #include <iostream>
 namespace sdk {
