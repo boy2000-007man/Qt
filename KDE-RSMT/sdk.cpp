@@ -9,7 +9,7 @@ double sdk::distance(const Point &p1, const Point &p2) {
     return sqrt(pow(p1.first - p2.first, 2) + pow(p1.second - p2.second, 2));
 }
 bool sdk::equal(const Point &p1, const Point &p2) {
-    return abs(sdk::distance(p1, p2) < ZERO);
+    return sdk::distance(p1, p2) < ZERO;
 }
 bool sdk::equal(const PointType &p1, const PointType &p2) {
     return abs(p1 - p2) < ZERO;
