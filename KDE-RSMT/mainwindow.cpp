@@ -57,7 +57,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_actionOpen_File_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
-    if (fileName == "")
+    if (fileName.isEmpty())
         return ;
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly))
