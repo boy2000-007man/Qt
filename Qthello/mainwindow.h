@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include "chessboard.h"
 namespace Ui {
 class MainWindow;
 }
@@ -16,6 +16,7 @@ public:
     ~MainWindow();
     
 private:
+    ChessBoard *chessBoard;
     Ui::MainWindow *ui;
 };
 
