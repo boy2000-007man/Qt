@@ -16,7 +16,7 @@ private:
     Points localChessmen;
     Points remoteChessmen;
     QLabel *chessmen[SIZE][SIZE];
-    void paintEvent(QPaintEvent *);
+    void drawChess();
     bool eventFilter(QObject *, QEvent *);
     bool colorBlack;
     bool showNextStep;

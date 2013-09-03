@@ -100,21 +100,23 @@ void ChessBoard::setColor(bool black) {
 void ChessBoard::setTurn(bool local) {
     turn = local;
 }
-void ChessBoard::paintEvent(QPaintEvent *) {
+void ChessBoard::drawChess() {
+    static QPixmap board = QPixmap("board.png");
+    static QPixmap black = QPixmap("black.png");
+    static QPixmap white = QPixmap("white.png");
+    static QPixmap local = QPixmap("local.png");
+    static QPixmap remote = QPixmap("remote.png");
     for (int i = 0; i < SIZE; i++)
         for (int j = 0; j < SIZE; j++)
-            chessmen[i][j]->setPixmap(QPixmap("board.png").scaled(chessmen[i][j]->size(), Qt::KeepAspectRatio));
-
+            chessmen[i][j]->setPixmap(board.scaled(chessmen[i][j]->size(), Qt::KeepAspectRatio));
     for (int i = 0; i < localChessmen.size(); i++) {
         QLabel *tmp = chessmen[localChessmen[i].first][localChessmen[i].second];
-        //cerr << (tmp->size().width()) << endl;
-        //cerr << (tmp->size().height()) << endl;
-        tmp->setPixmap(QPixmap(colorBlack ? "black.png" : "white.png").scaled(tmp->size(), Qt::KeepAspectRatio));
+        tmp->setPixmap((colorBlack ? black : white).scaled(tmp->size(), Qt::KeepAspectRatio));
     }
 
     for (int i = 0; i < remoteChessmen.size(); i++) {
         QLabel *tmp = chessmen[remoteChessmen[i].first][remoteChessmen[i].second];
-        tmp->setPixmap(QPixmap(!colorBlack ? "black.png" : "white.png").scaled(tmp->size(), Qt::KeepAspectRatio));
+        tmp->setPixmap((!colorBlack ? black : white).scaled(tmp->size(), Qt::KeepAspectRatio));
     }
 
     if (!showNextStep)
@@ -122,18 +124,21 @@ void ChessBoard::paintEvent(QPaintEvent *) {
     const Points points = (turn ? calc(localChessmen, remoteChessmen) : calc(remoteChessmen, localChessmen));
     for (int i = 0; i < points.size(); i++) {
         QLabel *tmp = chessmen[points[i].first][points[i].second];
-        tmp->setPixmap(QPixmap(turn ? "local.png" : "remote.png").scaled(tmp->size(), Qt::KeepAspectRatio));
+        tmp->setPixmap((turn ? local : remote).scaled(tmp->size(), Qt::KeepAspectRatio));
     }
 }
 bool ChessBoard::eventFilter(QObject *obj, QEvent *eve) {
     if (obj == this) {
-        if (eve->type() == QEvent::MouseButtonRelease) {
+        if (eve->type() == QEvent::Resize) {
+            drawChess();
+            return true;
+        } else if (eve->type() == QEvent::MouseButtonRelease) {
             showNextStep = false;
-            update();
+            drawChess();
             return true;
         } else if (eve->type() == QEvent::MouseButtonPress && static_cast<QMouseEvent *>(eve)->button() == Qt::RightButton) {
             showNextStep = true;
-            update();
+            drawChess();
             return true;
         }
         return false;
@@ -159,7 +164,7 @@ bool ChessBoard::eventFilter(QObject *obj, QEvent *eve) {
     for (int i = 0; i < food.size(); i++)
         localChessmen.push_back(food[i]);
     localChessmen.push_back(id);
-    update();
+    drawChess();
     turn = false;
     emit localChess(id.first, id.second);
     return true;
@@ -180,4 +185,5 @@ void ChessBoard::setInit() {
         localChessmen = p2;
         remoteChessmen = p1;
     }
+    drawChess();
 }
