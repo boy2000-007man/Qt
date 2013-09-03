@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>401</width>
+    <height>299</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -108,7 +108,7 @@
       </layout>
      </item>
      <item row="0" column="0">
-      <widget class="QWidget" name="chessWidget" native="true"/>
+      <layout class="QGridLayout" name="chessLayout"/>
      </item>
     </layout>
    </widget>
@@ -118,7 +118,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
+     <width>401</width>
      <height>25</height>
     </rect>
    </property>

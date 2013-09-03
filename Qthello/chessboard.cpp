@@ -1,15 +1,92 @@
 #include "chessboard.h"
 #include <QPixmap>
 #include <QEvent>
+#include <QMouseEvent>
+#include <QLayout>
+#include <QGridLayout>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 using namespace std;
-ChessBoard::ChessBoard(QWidget *parent) :
-    QWidget(parent)
-{
+static void clean(Points &current, Points lost) {
+    sort(current.begin(), current.end());
+    sort(lost.begin(), lost.end());
+    for (int i = 0, j = 0; j < lost.size(); i++)
+        if (current[i] == lost[j]) {
+            current[i] = make_pair(SIZE, SIZE);
+            j++;
+        }
+    sort(current.begin(), current.end());
+    for (int i = 0; i < lost.size(); i++)
+        current.pop_back();
+}
+static Points eat(const Points &p1, const Points &p2, const Point &p) {
+    Points food;
+    int chessBoard[SIZE][SIZE];
     for (int i = 0; i < SIZE; i++)
         for (int j = 0; j < SIZE; j++)
+            chessBoard[i][j] = -1;
+    for (int i = 0; i < p1.size(); i++)
+        chessBoard[p1[i].first][p1[i].second] = 1;
+    for (int i = 0; i < p2.size(); i++)
+        chessBoard[p2[i].first][p2[i].second] = 2;
+    const int x = p.first, y = p.second;
+    if (chessBoard[x][y] != -1)
+        return food;
+    int tmp;
+    for (tmp = 1; x-tmp>0 && chessBoard[x-tmp][y] == 2; tmp++);
+    if (tmp!=1 && x-tmp>=0 && chessBoard[x-tmp][y] == 1)
+        for (int i = 1; i < tmp; i++)
+            food.push_back(make_pair(x-i, y));
+    for (tmp = 1; y-tmp>0 && chessBoard[x][y-tmp] == 2; tmp++);
+    if (tmp!=1 && y-tmp>=0 && chessBoard[x][y-tmp] == 1)
+        for (int i = 1; i < tmp; i++)
+            food.push_back(make_pair(x, y-i));
+    for (tmp = 1; x+tmp<SIZE && chessBoard[x+tmp][y] == 2; tmp++);
+    if (tmp!=1 && x+tmp<SIZE && chessBoard[x+tmp][y] == 1)
+        for (int i = 1; i < tmp; i++)
+            food.push_back(make_pair(x+i, y));
+    for (tmp = 1; y+tmp<SIZE && chessBoard[x][y+tmp] == 2; tmp++);
+    if (tmp!=1 && y+tmp<SIZE && chessBoard[x][y+tmp] == 1)
+        for (int i = 1; i < tmp; i++)
+            food.push_back(make_pair(x, y+i));
+    for (tmp = 1; x-tmp>0 && y-tmp>0 && chessBoard[x-tmp][y-tmp] == 2; tmp++);
+    if (tmp!=1 && x-tmp>=0 && y-tmp>=0 && chessBoard[x-tmp][y-tmp] == 1)
+        for (int i = 1; i < tmp; i++)
+            food.push_back(make_pair(x-i, y-i));
+    for (tmp = 1; x-tmp>0 && y+tmp<SIZE && chessBoard[x-tmp][y+tmp] == 2; tmp++);
+    if (tmp!=1 && x-tmp>=0 && y+tmp<SIZE && chessBoard[x-tmp][y+tmp] == 1)
+        for (int i = 1; i < tmp; i++)
+            food.push_back(make_pair(x-i, y+i));
+    for (tmp = 1; x+tmp<SIZE && y-tmp>0 && chessBoard[x+tmp][y-tmp] == 2; tmp++);
+    if (tmp !=1 && x+tmp<SIZE && y-tmp>=0 && chessBoard[x+tmp][y-tmp] == 1)
+        for (int i = 1; i < tmp; i++)
+            food.push_back(make_pair(x+i, y-i));
+    for (tmp = 1; x+tmp<SIZE && y+tmp<SIZE && chessBoard[x+tmp][y+tmp] == 2; tmp++);
+    if (tmp !=1 && x+tmp<SIZE && y+tmp<SIZE && chessBoard[x+tmp][y+tmp] == 1)
+        for (int i = 1; i < tmp; i++)
+            food.push_back(make_pair(x+i, y+i));
+    return food;
+}
+static Points calc(const Points &p1, const Points &p2) {
+    Points points;
+    for (int i = 0; i < SIZE; i++)
+        for (int j = 0; j < SIZE; j++)
+            if (eat(p1, p2, make_pair(i, j)).size() != 0)
+                points.push_back(make_pair(i, j));
+    return points;
+}
+ChessBoard::ChessBoard(QWidget *parent) :
+    QWidget(parent), showNextStep(false)
+{
+    QGridLayout *gridLayout = new QGridLayout(this);
+
+    for (int i = 0; i < SIZE; i++)
+        for (int j = 0; j < SIZE; j++) {
             chessmen[i][j] = new QLabel(this);
+            gridLayout->addWidget(chessmen[i][j], i, j);
+            chessmen[i][j]->installEventFilter(this);
+        }
     installEventFilter(this);
 }
 ChessBoard::~ChessBoard() {
@@ -17,7 +94,6 @@ ChessBoard::~ChessBoard() {
         for (int j = 0; j < SIZE; j++)
             delete chessmen[i][j];
 }
-
 void ChessBoard::setColor(bool black) {
     colorBlack = black;
 }
@@ -25,12 +101,14 @@ void ChessBoard::setTurn(bool local) {
     turn = local;
 }
 void ChessBoard::paintEvent(QPaintEvent *) {
-  /*  for (int i = 0; i < SIZE; i++)
+    for (int i = 0; i < SIZE; i++)
         for (int j = 0; j < SIZE; j++)
             chessmen[i][j]->setPixmap(QPixmap("board.png").scaled(chessmen[i][j]->size(), Qt::KeepAspectRatio));
-    */
+
     for (int i = 0; i < localChessmen.size(); i++) {
         QLabel *tmp = chessmen[localChessmen[i].first][localChessmen[i].second];
+        //cerr << (tmp->size().width()) << endl;
+        //cerr << (tmp->size().height()) << endl;
         tmp->setPixmap(QPixmap(colorBlack ? "black.png" : "white.png").scaled(tmp->size(), Qt::KeepAspectRatio));
     }
 
@@ -38,14 +116,28 @@ void ChessBoard::paintEvent(QPaintEvent *) {
         QLabel *tmp = chessmen[remoteChessmen[i].first][remoteChessmen[i].second];
         tmp->setPixmap(QPixmap(!colorBlack ? "black.png" : "white.png").scaled(tmp->size(), Qt::KeepAspectRatio));
     }
-    /*
-    const Points points = calc();
+
+    if (!showNextStep)
+        return ;
+    const Points points = (turn ? calc(localChessmen, remoteChessmen) : calc(remoteChessmen, localChessmen));
     for (int i = 0; i < points.size(); i++) {
-        QLabel *tmp = chessmen[remoteChessmen[i].first][remoteChessmen[i].second];
+        QLabel *tmp = chessmen[points[i].first][points[i].second];
         tmp->setPixmap(QPixmap(turn ? "local.png" : "remote.png").scaled(tmp->size(), Qt::KeepAspectRatio));
-    }*/
+    }
 }
 bool ChessBoard::eventFilter(QObject *obj, QEvent *eve) {
+    if (obj == this) {
+        if (eve->type() == QEvent::MouseButtonRelease) {
+            showNextStep = false;
+            update();
+            return true;
+        } else if (eve->type() == QEvent::MouseButtonPress && static_cast<QMouseEvent *>(eve)->button() == Qt::RightButton) {
+            showNextStep = true;
+            update();
+            return true;
+        }
+        return false;
+    }
     if (!turn)
         return false;
     if (eve->type() != QEvent::MouseButtonDblClick)
@@ -57,58 +149,20 @@ bool ChessBoard::eventFilter(QObject *obj, QEvent *eve) {
                 id = make_pair(i, j);
     if (id == make_pair(-1, -1))
         return false;
-    const Points points = calc();
-    for (int i = 0; i < points.size(); i++)
-        if (id == points[i]) {
-            localChessmen.push_back(id);
-            emit localChess(id.first, id.second);
-            return true;
-        }
-}
-Points ChessBoard::calc() {
-    int chessBoard[SIZE][SIZE];
-    for (int i = 0; i < SIZE; i++)
-        for (int j = 0; j < SIZE; j++)
-            chessBoard[i][j] = -1;
-    for (int i = 0; i < localChessmen.size(); i++)
-        chessBoard[localChessmen[i].first][localChessmen[i].second] = 1;
-    for (int i = 0; i < remoteChessmen.size(); i++)
-        chessBoard[remoteChessmen[i].first][remoteChessmen[i].second] = 0;
-    Points points;
-    for (int i = 0; i < SIZE; i++)
-        for (int j = 0; j < SIZE; j++)
-            if (chessBoard[i][j] == -1) {
-                if (turn) {
-                    int tmp = 1;
-                    while (i -tmp > 0 && chessBoard[i - tmp][j] == 0)  tmp++;
-                    if (tmp !=1 && i - tmp > 0 && chessBoard[i - tmp - 1][j] == 1) chessBoard[i][j] = 2;
-                    tmp = 1;
-                    while (j -tmp > 0 && chessBoard[i][j - tmp] == 0)  tmp++;
-                    if (tmp !=1 && j - tmp > 0 && chessBoard[i][j - tmp - 1] == 1) chessBoard[i][j] = 2;
-                    tmp = 1;
-                    while (i +tmp < SIZE && chessBoard[i + tmp][j] == 0)   tmp++;
-                    if (tmp !=1 && i + tmp + 1 < SIZE && chessBoard[i + tmp + 1][j] == 1)  chessBoard[i][j] = 2;
-                    tmp = 1;
-                    while (j +tmp < SIZE && chessBoard[i][j + tmp] == 0)   tmp++;
-                    if (tmp !=1 && j + tmp + 1 < SIZE && chessBoard[i][j + tmp + 1] == 1)  chessBoard[i][j] = 2;
-
-                    tmp = 1;
-                    while (i-tmp>0 && j-tmp>0 && chessBoard[i-tmp][j-tmp] == 0)  tmp++;
-                    if (tmp !=1 && i-tmp>0 && j-tmp>0 && chessBoard[i-tmp-1][j-tmp-1] == 1) chessBoard[i][j] = 2;
-                    tmp = 1;
-                    while (i-tmp>0 && j+tmp<SIZE && chessBoard[i-tmp][j+tmp] == 0)  tmp++;
-                    if (tmp !=1 && i-tmp>0 && j+tmp+1<SIZE && chessBoard[i-tmp-1][j+tmp+1] == 1) chessBoard[i][j] = 2;
-                    tmp = 1;
-                    while (i+tmp<SIZE && j-tmp>0 && chessBoard[i+tmp][j-tmp] == 0)   tmp++;
-                    if (tmp !=1 && i+tmp+1<SIZE && j-tmp>0 && chessBoard[i+tmp+1][j-tmp-1] == 1)  chessBoard[i][j] = 2;
-                    tmp = 1;
-                    while (i+tmp<SIZE && j+tmp<SIZE && chessBoard[i+tmp][j+tmp] == 0)   tmp++;
-                    if (tmp !=1 && i+tmp+1<SIZE && j+tmp+1<SIZE && chessBoard[i+tmp+1][j+tmp+1] == 1)  chessBoard[i][j] = 2;
-                }
-                if (chessBoard[i][j] == 2)
-                    points.push_back(make_pair(i, j));
-            }
-    return points;
+    const Points food = eat(localChessmen, remoteChessmen, id);
+    if (food.size() == 0)
+        return false;
+    cerr << food.size() << endl;
+    for (int i = 0; i < food.size(); i++)
+        cerr << food[i].first << " " << food[i].second << endl;
+    clean(remoteChessmen, food);
+    for (int i = 0; i < food.size(); i++)
+        localChessmen.push_back(food[i]);
+    localChessmen.push_back(id);
+    update();
+    turn = false;
+    emit localChess(id.first, id.second);
+    return true;
 }
 void ChessBoard::remoteChess(int x, int y) {
     remoteChessmen.push_back(make_pair(x, y));

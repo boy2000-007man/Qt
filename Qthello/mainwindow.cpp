@@ -10,10 +10,11 @@ MainWindow::MainWindow(QWidget *parent) :
     //QGridLayout *mainLayout = new QGridLayout(this);
     centralWidget()->setLayout(ui->gridLayout);
     chessBoard = new ChessBoard(this);
+    ui->chessLayout->addWidget(chessBoard);
     chessBoard->setColor();
     chessBoard->setTurn();
     chessBoard->setInit();
-    ui->chessWidget = chessBoard;
+
     statusBar()->setSizeGripEnabled(false);
     //setLayout(mainLayout);
     //ui->

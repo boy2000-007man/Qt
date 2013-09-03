@@ -19,7 +19,7 @@ private:
     void paintEvent(QPaintEvent *);
     bool eventFilter(QObject *, QEvent *);
     bool colorBlack;
-    Points calc();
+    bool showNextStep;
     bool turn;
 signals:
     void localChess(int, int);
