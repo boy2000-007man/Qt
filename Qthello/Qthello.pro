@@ -14,13 +14,10 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    chessboard.cpp \
-    hostthread.cpp
+    chessboard.cpp
 
 HEADERS  += mainwindow.h \
     chessboard.h \
-    chess.h \
-    hostthread.h \
-    network.h
+    chess.h
 
 FORMS    += mainwindow.ui

@@ -1,7 +1,6 @@
 #ifndef CHESSBOARD_H
 #define CHESSBOARD_H
 #include "chess.h"
-#include "hostthread.h"
 #include <QWidget>
 #include <QLabel>
 class ChessBoard : public QWidget
@@ -10,14 +9,10 @@ class ChessBoard : public QWidget
 public:
     explicit ChessBoard(QWidget *parent = 0);
     ~ChessBoard();
-    void startHost();
-    void endHost();
-    //void setClient();
-private:
-    HostThread *hostThread;
     void setColor(bool black = true);
     void setTurn(bool local = true);
     void setInit();
+private:
     Points localChessmen;
     Points remoteChessmen;
     QLabel *chessmen[SIZE][SIZE];

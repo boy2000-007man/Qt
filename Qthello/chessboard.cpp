@@ -1,5 +1,4 @@
 #include "chessboard.h"
-#include "hostthread.h"
 #include <QPixmap>
 #include <QEvent>
 #include <QMouseEvent>
@@ -93,7 +92,7 @@ ChessBoard::ChessBoard(QWidget *parent) :
 ChessBoard::~ChessBoard() {
     for (int i = 0; i < SIZE; i++)
         for (int j = 0; j < SIZE; j++)
-            chessmen[i][j]->deleteLater();
+            delete chessmen[i][j];
 }
 void ChessBoard::setColor(bool black) {
     colorBlack = black;
@@ -187,12 +186,4 @@ void ChessBoard::setInit() {
         remoteChessmen = p1;
     }
     drawChess();
-}
-void ChessBoard::startHost() {
-    hostThread = new HostThread(this);
-    hostThread->start();
-}
-void ChessBoard::endHost() {
-    hostThread->exit();
-    hostThread->deleteLater();
 }
