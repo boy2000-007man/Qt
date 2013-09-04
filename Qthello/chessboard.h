@@ -3,6 +3,8 @@
 #include "chess.h"
 #include <QWidget>
 #include <QLabel>
+#include <QtNetwork/QTcpServer>
+#include <QtNetwork/QTcpSocket>
 class ChessBoard : public QWidget
 {
     Q_OBJECT
@@ -21,11 +23,18 @@ private:
     bool colorBlack;
     bool showNextStep;
     bool turn;
+    QTcpServer *hostServer;
+    QTcpSocket *clientSocket;
 signals:
     void localChess(int, int);
     void result(int);
+    void created();
 public slots:
     void remoteChess(int, int);
+    void createHost();
+    void terminateHost();
+    void connectRemote();
+    void disconnectRemote();
 };
 
 #endif // CHESSBOARD_H

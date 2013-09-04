@@ -24,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
     chessBoard->setInit();
 
     statusBar()->setSizeGripEnabled(false);
+    QObject::connect(ui->createHost, SIGNAL(clicked()), chessBoard, SLOT(createHost()));
+    QObject::connect(ui->connectHost, SIGNAL(clicked()), chessBoard, SLOT(terminateHost()));
 }
 
 MainWindow::~MainWindow()
@@ -48,9 +50,9 @@ void MainWindow::on_createHost_clicked()
                 break;
             }
     QPushButton *ok = new QPushButton(dialog);
-    ok->setText("preparing");
+    ok->setText("keep listening");
     QPushButton *cancel = new QPushButton(dialog);
-    cancel->setText("cancel");
+    cancel->setText("terminate");
     QGridLayout *gridLayout = new QGridLayout(dialog);
     gridLayout->addWidget(label, 0, 0);
     gridLayout->addWidget(lineEdit, 1, 0);
@@ -60,6 +62,7 @@ void MainWindow::on_createHost_clicked()
 
     QObject::connect(ok, SIGNAL(clicked()), dialog, SLOT(close()));
     QObject::connect(cancel, SIGNAL(clicked()), dialog, SLOT(close()));
+    QObject::connect(cancel, SIGNAL(clicked()), chessBoard, SLOT(terminateHost()));
 }
 
 void MainWindow::on_connectHost_clicked()

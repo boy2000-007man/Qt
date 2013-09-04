@@ -7,6 +7,8 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <QDebug>
+#define PORT 3141
 using namespace std;
 static void clean(Points &current, Points lost) {
     sort(current.begin(), current.end());
@@ -77,10 +79,9 @@ static Points calc(const Points &p1, const Points &p2) {
     return points;
 }
 ChessBoard::ChessBoard(QWidget *parent) :
-    QWidget(parent), showNextStep(false)
+    QWidget(parent), showNextStep(false), hostServer(NULL), clientSocket(NULL)
 {
     QGridLayout *gridLayout = new QGridLayout(this);
-
     for (int i = 0; i < SIZE; i++)
         for (int j = 0; j < SIZE; j++) {
             chessmen[i][j] = new QLabel(this);
@@ -186,4 +187,27 @@ void ChessBoard::setInit() {
         remoteChessmen = p1;
     }
     drawChess();
+}
+void ChessBoard::createHost() {
+    if (hostServer != NULL)
+        return ;
+    hostServer = new QTcpServer(this);
+    hostServer->listen(QHostAddress::Any, PORT);
+    QObject::connect(hostServer, SIGNAL(newConnection()), this, SLOT(connectRemote()));
+    qDebug() << "now listening ...";
+}
+void ChessBoard::terminateHost() {
+    if (hostServer == NULL)
+        return ;
+    hostServer->deleteLater();
+    hostServer = NULL;
+    qDebug() << "terminate host server";
+}
+void ChessBoard::connectRemote() {
+    if (clientSocket != NULL)
+        return ;
+    clientSocket = hostServer->nextPendingConnection();
+}
+void ChessBoard::disconnectRemote() {
+
 }
