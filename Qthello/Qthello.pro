@@ -14,10 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    chessboard.cpp
+    chessboard.cpp \
+    ipconverter.cpp
 
 HEADERS  += mainwindow.h \
     chessboard.h \
-    chess.h
+    chess.h \
+    ipconverter.h
 
 FORMS    += mainwindow.ui

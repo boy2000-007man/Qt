@@ -18,6 +18,8 @@ public:
 private slots:
     void on_createHost_clicked();
 
+    void on_connectHost_clicked();
+
 private:
     ChessBoard *chessBoard;
     Ui::MainWindow *ui;
