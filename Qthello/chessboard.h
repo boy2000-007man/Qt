@@ -28,6 +28,7 @@ signals:
     void currentRound(int);
     void localScore(int);
     void remoteScore(int);
+    void waitRemoteChess();
 public slots:
     void check();
     void startGame(int);

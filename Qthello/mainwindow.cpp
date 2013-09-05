@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(chessBoard, SIGNAL(currentRound(int)), this, SLOT(showRoundNumber(int)));
     QObject::connect(chessBoard, SIGNAL(localScore(int)), this, SLOT(showLocalScore(int)));
     QObject::connect(chessBoard, SIGNAL(remoteScore(int)), this, SLOT(showRemoteScore(int)));
+    QObject::connect(chessBoard, SIGNAL(gameResult(int)), this, SLOT(showResult(int)));
 
     statusBar()->setSizeGripEnabled(false);
 }
@@ -167,4 +168,18 @@ void MainWindow::showLocalScore(int score) {
 }
 void MainWindow::showRemoteScore(int score) {
     ui->remoteScore->setText(QString("Remote Score: %1").arg(score));
+}
+void MainWindow::showResult(int code) {
+    QDialog *resultDialog = new QDialog(this);
+    QGridLayout *gridLayout = new QGridLayout(resultDialog);
+    QLabel *result = new QLabel(resultDialog);
+    if (code == 0)
+        result->setText("The game result is draw.");
+    else if (code == 1)
+        result->setText("Congratulation! You Win!");
+    else
+        result->setText("You lost the game.");
+    gridLayout->addWidget(result);
+    resultDialog->show();
+    resultDialog->exec();
 }

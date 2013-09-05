@@ -153,12 +153,12 @@ bool ChessBoard::eventFilter(QObject *obj, QEvent *eve) {
         localChessmen.push_back(food[i]);
     localChessmen.push_back(id);
 
+    showChess();
     emit currentRound(++roundNumber);
     emit localScore(localChessmen.size());
     emit remoteScore(remoteChessmen.size());
     emit localChess(id.first, id.second);
 
-    showChess();
     return true;
 }
 void ChessBoard::remoteChess(int x, int y) {
@@ -170,11 +170,11 @@ void ChessBoard::remoteChess(int x, int y) {
     }
     remoteChessmen.push_back(make_pair(x, y));
 
+    showChess();
     emit currentRound(++roundNumber);
     emit localScore(localChessmen.size());
     emit remoteScore(remoteChessmen.size());
 
-    showChess();
 }
 void ChessBoard::startGame(int playerNum) {
     playerNumber = playerNum;
@@ -190,9 +190,6 @@ void ChessBoard::startGame(int playerNum) {
         localChessmen = p2;
         remoteChessmen = p1;
     }
-    emit currentRound(roundNumber = 0);
-    emit localScore(localChessmen.size());
-    emit remoteScore(remoteChessmen.size());
 
     qDebug() << "player :" << playerNumber << "now game start";
 
@@ -203,12 +200,17 @@ void ChessBoard::startGame(int playerNum) {
     QObject::connect(this, SIGNAL(localChess(int,int)), gamePlatform, SLOT(sendLocalChess(int,int)));
     QObject::connect(gamePlatform, SIGNAL(remoteChess(int,int)), this, SLOT(remoteChess(int,int)));
     QObject::connect(gamePlatform, SIGNAL(sendComplete()), gamePlatform, SLOT(waitRemoteChess()));
+    QObject::connect(this, SIGNAL(waitRemoteChess()), gamePlatform, SLOT(waitRemoteChess()));
     remoteThread->start();
 
     if (playerNumber != 1)
-        emit localChess(-1, -1);
+        emit waitRemoteChess();
 
     showChess();
+
+    emit currentRound(roundNumber = 0);
+    emit localScore(localChessmen.size());
+    emit remoteScore(remoteChessmen.size());
 }
 void ChessBoard::setRemoteConnect(QTcpSocket *remoteConnection) {
     remoteConnect = remoteConnection;
@@ -216,11 +218,14 @@ void ChessBoard::setRemoteConnect(QTcpSocket *remoteConnection) {
 void ChessBoard::terminateGame() {
     qDebug() << "exit remote thread";
     remoteThread->exit();
+    remoteThread->wait();
     remoteThread = NULL;
+    remoteConnect->deleteLater();
+    remoteConnect = NULL;
     if (localChessmen.size() == remoteChessmen.size())
         emit gameResult(0);
     else
-        emit gameResult(playerNumber==1 ^ localChessmen.size()<remoteChessmen.size() ? 1 : 2);
+        emit gameResult(localChessmen.size() > remoteChessmen.size() ? 1 : 2);
 }
 void ChessBoard::check() {
     if (localChessmen.size() + remoteChessmen.size() == SIZE*SIZE)

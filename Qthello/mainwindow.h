@@ -30,6 +30,7 @@ private slots:
     void showRoundNumber(int);
     void showLocalScore(int);
     void showRemoteScore(int);
+    void showResult(int);
 private:
     Ui::MainWindow *ui;
 
