@@ -25,8 +25,10 @@ private:
     bool showNextStep;
     bool turn;
     QTcpServer *hostServer;
+    QThread *thread;
 signals:
     void localChess(int, int);
+    void waitRemoteChess();
     void result(int);
     void created();
     void connectEstablished();

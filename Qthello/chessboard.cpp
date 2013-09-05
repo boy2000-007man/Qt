@@ -1,4 +1,5 @@
 #include "chessboard.h"
+#include "tcp.h"
 #include <QPixmap>
 #include <QEvent>
 #include <QMouseEvent>
@@ -8,6 +9,7 @@
 #include <cmath>
 #include <algorithm>
 #include <QDebug>
+#include <QThread>
 #include "PORT.h"
 using namespace std;
 static void clean(Points &current, Points lost) {
@@ -172,7 +174,15 @@ bool ChessBoard::eventFilter(QObject *obj, QEvent *eve) {
     return true;
 }
 void ChessBoard::remoteChess(int x, int y) {
+    Points food = eat(remoteChessmen, localChessmen, make_pair(x, y));
+    clean(localChessmen, food);
+    while (food.size() != 0) {
+        remoteChessmen.push_back(food.back());
+        food.pop_back();
+    }
     remoteChessmen.push_back(make_pair(x, y));
+    turn = true;
+    drawChess();
 }
 void ChessBoard::setInit() {
     Points p1, p2;
@@ -219,4 +229,15 @@ void ChessBoard::playGame() {
     setColor(hostServer == NULL);
     setTurn(colorBlack != true);
     setInit();
+    thread = new QThread();
+    Tcp *tcp = new Tcp();
+    remoteSocket->setParent(tcp);
+    tcp->tcpSocket = remoteSocket;
+    tcp->moveToThread(thread);
+    QObject::connect(this, SIGNAL(localChess(int,int)), tcp, SLOT(sendLocalChess(int,int)));
+    QObject::connect(tcp, SIGNAL(remoteChess(int,int)), this, SLOT(remoteChess(int,int)));
+    QObject::connect(this, SIGNAL(waitRemoteChess()), tcp, SLOT(waitRemoteChess()));
+    thread->start();
+    if (!turn)
+        emit waitRemoteChess();
 }

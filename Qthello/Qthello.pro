@@ -17,7 +17,8 @@ SOURCES += main.cpp\
     chessboard.cpp \
     ipconverter.cpp \
     ipdialog.cpp \
-    createhostdialog.cpp
+    createhostdialog.cpp \
+    tcp.cpp
 
 HEADERS  += mainwindow.h \
     chessboard.h \
@@ -25,7 +26,8 @@ HEADERS  += mainwindow.h \
     ipconverter.h \
     ipdialog.h \
     PORT.h \
-    createhostdialog.h
+    createhostdialog.h \
+    tcp.h
 
 FORMS    += mainwindow.ui \
     ipdialog.ui
