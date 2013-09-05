@@ -3,42 +3,36 @@
 #include "chess.h"
 #include <QWidget>
 #include <QLabel>
-#include <QtNetwork/QTcpServer>
-#include <QtNetwork/QTcpSocket>
+#include <QTcpSocket>
 class ChessBoard : public QWidget
 {
     Q_OBJECT
 public:
     explicit ChessBoard(QWidget *parent = 0);
-    ~ChessBoard();
-    void setColor(bool black = true);
-    void setTurn(bool local = true);
-    void setInit();
-    QTcpSocket *remoteSocket;
+
+    void setRemoteConnect(QTcpSocket *remoteConnection);
 private:
+    bool eventFilter(QObject *, QEvent *);
+
+    void showChess(bool showNextStep = false);
+    QTcpSocket *remoteConnect;
     Points localChessmen;
     Points remoteChessmen;
     QLabel *chessmen[SIZE][SIZE];
-    void drawChess();
-    bool eventFilter(QObject *, QEvent *);
-    bool colorBlack;
-    bool showNextStep;
-    bool turn;
-    QTcpServer *hostServer;
-    QThread *thread;
+    int playerNumber;
+    int roundNumber;
+    QThread *remoteThread;
 signals:
     void localChess(int, int);
-    void waitRemoteChess();
-    void result(int);
-    void created();
-    void connectEstablished();
+    void gameResult(int);
+    void currentRound(int);
+    void localScore(int);
+    void remoteScore(int);
 public slots:
+    void check();
+    void startGame(int);
+    void terminateGame();
     void remoteChess(int, int);
-    void createHost();
-    void terminateHost();
-    void connectClient();
-    void disconnectRemote();
-    void playGame();
 };
 
 #endif // CHESSBOARD_H

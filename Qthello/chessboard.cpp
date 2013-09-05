@@ -1,5 +1,5 @@
 #include "chessboard.h"
-#include "tcp.h"
+#include "gameplatform.h"
 #include <QPixmap>
 #include <QEvent>
 #include <QMouseEvent>
@@ -10,8 +10,6 @@
 #include <algorithm>
 #include <QDebug>
 #include <QThread>
-#include "PORT.h"
-using namespace std;
 static void clean(Points &current, Points lost) {
     sort(current.begin(), current.end());
     sort(lost.begin(), lost.end());
@@ -81,8 +79,7 @@ static Points calc(const Points &p1, const Points &p2) {
     return points;
 }
 ChessBoard::ChessBoard(QWidget *parent) :
-    QWidget(parent), showNextStep(false), hostServer(NULL), remoteSocket(NULL)
-{
+    QWidget(parent), remoteConnect(NULL), remoteThread(NULL) {
     QGridLayout *gridLayout = new QGridLayout(this);
     for (int i = 0; i < SIZE; i++)
         for (int j = 0; j < SIZE; j++) {
@@ -91,65 +88,54 @@ ChessBoard::ChessBoard(QWidget *parent) :
             chessmen[i][j]->installEventFilter(this);
         }
     installEventFilter(this);
-    QObject::connect(this, SIGNAL(connectEstablished()), this, SLOT(playGame()));
+    QObject::connect(this, SIGNAL(currentRound(int)), this, SLOT(check()));
 }
-ChessBoard::~ChessBoard() {
-    for (int i = 0; i < SIZE; i++)
-        for (int j = 0; j < SIZE; j++)
-            delete chessmen[i][j];
-}
-void ChessBoard::setColor(bool black) {
-    colorBlack = black;
-}
-void ChessBoard::setTurn(bool local) {
-    turn = local;
-}
-void ChessBoard::drawChess() {
+void ChessBoard::showChess(bool showNextStep) {
     static QPixmap board = QPixmap("board.png");
     static QPixmap black = QPixmap("black.png");
     static QPixmap white = QPixmap("white.png");
     static QPixmap local = QPixmap("local.png");
     static QPixmap remote = QPixmap("remote.png");
+
     for (int i = 0; i < SIZE; i++)
         for (int j = 0; j < SIZE; j++)
             chessmen[i][j]->setPixmap(board.scaled(chessmen[i][j]->size(), Qt::KeepAspectRatio));
+
     for (int i = 0; i < localChessmen.size(); i++) {
         QLabel *tmp = chessmen[localChessmen[i].first][localChessmen[i].second];
-        tmp->setPixmap((colorBlack ? black : white).scaled(tmp->size(), Qt::KeepAspectRatio));
+        tmp->setPixmap((playerNumber == 1 ? white : black).scaled(tmp->size(), Qt::KeepAspectRatio));
     }
 
     for (int i = 0; i < remoteChessmen.size(); i++) {
         QLabel *tmp = chessmen[remoteChessmen[i].first][remoteChessmen[i].second];
-        tmp->setPixmap((!colorBlack ? black : white).scaled(tmp->size(), Qt::KeepAspectRatio));
+        tmp->setPixmap((playerNumber == 1 ? black : white).scaled(tmp->size(), Qt::KeepAspectRatio));
     }
 
     if (!showNextStep)
         return ;
-    const Points points = (turn ? calc(localChessmen, remoteChessmen) : calc(remoteChessmen, localChessmen));
+    const Points points = (roundNumber%2 == playerNumber-1 ? calc(localChessmen, remoteChessmen) : calc(remoteChessmen, localChessmen));
     for (int i = 0; i < points.size(); i++) {
         QLabel *tmp = chessmen[points[i].first][points[i].second];
-        tmp->setPixmap((turn ? local : remote).scaled(tmp->size(), Qt::KeepAspectRatio));
+        tmp->setPixmap((roundNumber%2 == playerNumber-1 ? local : remote).scaled(tmp->size(), Qt::KeepAspectRatio));
     }
 }
 bool ChessBoard::eventFilter(QObject *obj, QEvent *eve) {
     if (obj == this) {
         if (eve->type() == QEvent::Resize) {
-            drawChess();
+            showChess();
             return true;
         } else if (eve->type() == QEvent::MouseButtonRelease) {
-            showNextStep = false;
-            drawChess();
+            showChess();
             return true;
         } else if (eve->type() == QEvent::MouseButtonPress && static_cast<QMouseEvent *>(eve)->button() == Qt::RightButton) {
-            showNextStep = true;
-            drawChess();
+            showChess(true);
             return true;
         }
         return false;
     }
-    if (!turn)
-        return false;
     if (eve->type() != QEvent::MouseButtonDblClick)
+        return false;
+    if (roundNumber % 2 != playerNumber - 1)
         return false;
     Point id = make_pair(-1, -1);
     for (int i = 0; i < SIZE; i++)
@@ -158,19 +144,21 @@ bool ChessBoard::eventFilter(QObject *obj, QEvent *eve) {
                 id = make_pair(i, j);
     if (id == make_pair(-1, -1))
         return false;
+
     const Points food = eat(localChessmen, remoteChessmen, id);
     if (food.size() == 0)
         return false;
-    cerr << food.size() << endl;
-    for (int i = 0; i < food.size(); i++)
-        cerr << food[i].first << " " << food[i].second << endl;
     clean(remoteChessmen, food);
     for (int i = 0; i < food.size(); i++)
         localChessmen.push_back(food[i]);
     localChessmen.push_back(id);
-    drawChess();
-    turn = false;
+
+    emit currentRound(++roundNumber);
+    emit localScore(localChessmen.size());
+    emit remoteScore(remoteChessmen.size());
     emit localChess(id.first, id.second);
+
+    showChess();
     return true;
 }
 void ChessBoard::remoteChess(int x, int y) {
@@ -181,63 +169,64 @@ void ChessBoard::remoteChess(int x, int y) {
         food.pop_back();
     }
     remoteChessmen.push_back(make_pair(x, y));
-    turn = true;
-    drawChess();
+
+    emit currentRound(++roundNumber);
+    emit localScore(localChessmen.size());
+    emit remoteScore(remoteChessmen.size());
+
+    showChess();
 }
-void ChessBoard::setInit() {
+void ChessBoard::startGame(int playerNum) {
+    playerNumber = playerNum;
     Points p1, p2;
     p1.push_back(make_pair(SIZE/2-1,SIZE/2-1));
     p1.push_back(make_pair(SIZE/2,SIZE/2));
     p2.push_back(make_pair(SIZE/2-1,SIZE/2));
     p2.push_back(make_pair(SIZE/2,SIZE/2-1));
-    if (colorBlack) {
+    if (playerNumber == 1) {
         localChessmen = p1;
         remoteChessmen = p2;
     } else {
         localChessmen = p2;
         remoteChessmen = p1;
     }
-    drawChess();
-}
-void ChessBoard::createHost() {
-    if (hostServer != NULL)
-        return ;
-    hostServer = new QTcpServer(this);
-    hostServer->listen(QHostAddress::Any, PORT);
-    QObject::connect(hostServer, SIGNAL(newConnection()), this, SLOT(connectClient()));
-    qDebug() << "now listening ...";
-}
-void ChessBoard::terminateHost() {
-    if (hostServer == NULL)
-        return ;
-    hostServer->deleteLater();
-    hostServer = NULL;
-    qDebug() << "terminate host server";
-}
-void ChessBoard::connectClient() {
-    if (remoteSocket != NULL)
-        return ;
-    remoteSocket = hostServer->nextPendingConnection();
-    qDebug() << "connect to client";
-    emit connectEstablished();
-}
-void ChessBoard::disconnectRemote() {
+    emit currentRound(roundNumber = 0);
+    emit localScore(localChessmen.size());
+    emit remoteScore(remoteChessmen.size());
 
+    qDebug() << "player :" << playerNumber << "now game start";
+
+    GamePlatform *gamePlatform = new GamePlatform(remoteConnect);
+    remoteConnect = NULL;
+    remoteThread = new QThread();
+    gamePlatform->moveToThread(remoteThread);
+    QObject::connect(this, SIGNAL(localChess(int,int)), gamePlatform, SLOT(sendLocalChess(int,int)));
+    QObject::connect(gamePlatform, SIGNAL(remoteChess(int,int)), this, SLOT(remoteChess(int,int)));
+    QObject::connect(gamePlatform, SIGNAL(sendComplete()), gamePlatform, SLOT(waitRemoteChess()));
+    remoteThread->start();
+
+    if (playerNumber != 1)
+        emit localChess(-1, -1);
+
+    showChess();
 }
-void ChessBoard::playGame() {
-    qDebug() << "now play game";
-    setColor(hostServer == NULL);
-    setTurn(colorBlack != true);
-    setInit();
-    thread = new QThread();
-    Tcp *tcp = new Tcp();
-    remoteSocket->setParent(tcp);
-    tcp->tcpSocket = remoteSocket;
-    tcp->moveToThread(thread);
-    QObject::connect(this, SIGNAL(localChess(int,int)), tcp, SLOT(sendLocalChess(int,int)));
-    QObject::connect(tcp, SIGNAL(remoteChess(int,int)), this, SLOT(remoteChess(int,int)));
-    QObject::connect(this, SIGNAL(waitRemoteChess()), tcp, SLOT(waitRemoteChess()));
-    thread->start();
-    if (!turn)
-        emit waitRemoteChess();
+void ChessBoard::setRemoteConnect(QTcpSocket *remoteConnection) {
+    remoteConnect = remoteConnection;
+}
+void ChessBoard::terminateGame() {
+    qDebug() << "exit remote thread";
+    remoteThread->exit();
+    remoteThread = NULL;
+    if (localChessmen.size() == remoteChessmen.size())
+        emit gameResult(0);
+    else
+        emit gameResult(playerNumber==1 ^ localChessmen.size()<remoteChessmen.size() ? 1 : 2);
+}
+void ChessBoard::check() {
+    if (localChessmen.size() + remoteChessmen.size() == SIZE*SIZE)
+        terminateGame();
+    else if (calc(localChessmen, remoteChessmen).size() == 0)
+        terminateGame();
+    else if (calc(remoteChessmen, localChessmen).size() == 0)
+        terminateGame();
 }

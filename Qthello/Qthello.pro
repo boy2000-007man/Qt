@@ -16,18 +16,12 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     chessboard.cpp \
     ipconverter.cpp \
-    ipdialog.cpp \
-    createhostdialog.cpp \
-    tcp.cpp
+    gameplatform.cpp
 
 HEADERS  += mainwindow.h \
     chessboard.h \
     chess.h \
     ipconverter.h \
-    ipdialog.h \
-    PORT.h \
-    createhostdialog.h \
-    tcp.h
+    gameplatform.h
 
-FORMS    += mainwindow.ui \
-    ipdialog.ui
+FORMS    += mainwindow.ui
