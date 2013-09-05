@@ -14,6 +14,7 @@ public:
     void setColor(bool black = true);
     void setTurn(bool local = true);
     void setInit();
+    QTcpSocket *remoteSocket;
 private:
     Points localChessmen;
     Points remoteChessmen;
@@ -24,17 +25,18 @@ private:
     bool showNextStep;
     bool turn;
     QTcpServer *hostServer;
-    QTcpSocket *clientSocket;
 signals:
     void localChess(int, int);
     void result(int);
     void created();
+    void connectEstablished();
 public slots:
     void remoteChess(int, int);
     void createHost();
     void terminateHost();
-    void connectRemote();
+    void connectClient();
     void disconnectRemote();
+    void playGame();
 };
 
 #endif // CHESSBOARD_H

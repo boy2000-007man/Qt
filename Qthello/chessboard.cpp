@@ -8,7 +8,7 @@
 #include <cmath>
 #include <algorithm>
 #include <QDebug>
-#define PORT 3141
+#include "PORT.h"
 using namespace std;
 static void clean(Points &current, Points lost) {
     sort(current.begin(), current.end());
@@ -79,7 +79,7 @@ static Points calc(const Points &p1, const Points &p2) {
     return points;
 }
 ChessBoard::ChessBoard(QWidget *parent) :
-    QWidget(parent), showNextStep(false), hostServer(NULL), clientSocket(NULL)
+    QWidget(parent), showNextStep(false), hostServer(NULL), remoteSocket(NULL)
 {
     QGridLayout *gridLayout = new QGridLayout(this);
     for (int i = 0; i < SIZE; i++)
@@ -89,6 +89,7 @@ ChessBoard::ChessBoard(QWidget *parent) :
             chessmen[i][j]->installEventFilter(this);
         }
     installEventFilter(this);
+    QObject::connect(this, SIGNAL(connectEstablished()), this, SLOT(playGame()));
 }
 ChessBoard::~ChessBoard() {
     for (int i = 0; i < SIZE; i++)
@@ -193,7 +194,7 @@ void ChessBoard::createHost() {
         return ;
     hostServer = new QTcpServer(this);
     hostServer->listen(QHostAddress::Any, PORT);
-    QObject::connect(hostServer, SIGNAL(newConnection()), this, SLOT(connectRemote()));
+    QObject::connect(hostServer, SIGNAL(newConnection()), this, SLOT(connectClient()));
     qDebug() << "now listening ...";
 }
 void ChessBoard::terminateHost() {
@@ -203,11 +204,19 @@ void ChessBoard::terminateHost() {
     hostServer = NULL;
     qDebug() << "terminate host server";
 }
-void ChessBoard::connectRemote() {
-    if (clientSocket != NULL)
+void ChessBoard::connectClient() {
+    if (remoteSocket != NULL)
         return ;
-    clientSocket = hostServer->nextPendingConnection();
+    remoteSocket = hostServer->nextPendingConnection();
+    qDebug() << "connect to client";
+    emit connectEstablished();
 }
 void ChessBoard::disconnectRemote() {
 
+}
+void ChessBoard::playGame() {
+    qDebug() << "now play game";
+    setColor(hostServer == NULL);
+    setTurn(colorBlack != true);
+    setInit();
 }

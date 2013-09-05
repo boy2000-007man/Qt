@@ -15,11 +15,17 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     chessboard.cpp \
-    ipconverter.cpp
+    ipconverter.cpp \
+    ipdialog.cpp \
+    createhostdialog.cpp
 
 HEADERS  += mainwindow.h \
     chessboard.h \
     chess.h \
-    ipconverter.h
+    ipconverter.h \
+    ipdialog.h \
+    PORT.h \
+    createhostdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    ipdialog.ui
